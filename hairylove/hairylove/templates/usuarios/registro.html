@@ -277,12 +277,18 @@
                 <div class="form-row full" id="tipo-criador-group" style="display: none;">
                     <div class="form-input-group">
                         <label for="tipo-criador"><i class="fas fa-building"></i> Tipo de Criador</label>
-                        <select name="tipo_criador" id="tipo-criador">
+                        <select name="tipo_criador" id="tipo-criador" onchange="mostrarCampoNombreRefugio()">
                             <option value="">-- Selecciona --</option>
                             <option value="Refugio">Refugio</option>
                             <option value="Particular">Particular</option>
                             <option value="Protectora">Protectora</option>
                         </select>
+                    </div>
+                </div>
+                <div class="form-row full" id="nombre-refugio-group" style="display: none;">
+                    <div class="form-input-group">
+                        <label for="nombre-refugio"><i class="fas fa-paw"></i> Nombre del refugio</label>
+                        <input type="text" name="nombre_refugio" id="nombre-refugio" placeholder="Escribe el nombre del refugio">
                     </div>
                 </div>
 
@@ -312,161 +318,38 @@
             document.getElementById('tipo-input').value = tipo;
 
             // Mostrar/ocultar campos específicos
-            document.getElementById('tipo-criador-group').style.display = 
-                tipo === 'Criador' ? 'block' : 'none';
+            const criadorGroup = document.getElementById('tipo-criador-group');
+            criadorGroup.style.display = tipo === 'Criador' ? 'block' : 'none';
+
+            // Reset campo refugio cuando no se use
+            if (tipo !== 'Criador') {
+                document.getElementById('nombre-refugio-group').style.display = 'none';
+                document.getElementById('nombre-refugio').value = '';
+            }
+        }
+
+        function mostrarCampoNombreRefugio() {
+            const tipo = document.getElementById('tipo-criador').value;
+            const grupo = document.getElementById('nombre-refugio-group');
+            const label = document.querySelector('#nombre-refugio-group label');
+            const input = document.getElementById('nombre-refugio');
+
+            if (tipo === 'Refugio') {
+                grupo.style.display = 'block';
+                label.innerText = 'Nombre del refugio';
+                input.placeholder = 'Escribe el nombre del refugio';
+            } else if (tipo === 'Particular') {
+                grupo.style.display = 'block';
+                label.innerText = 'Nombre del particular';
+                input.placeholder = 'Escribe el nombre de la persona';
+            } else if (tipo === 'Protectora') {
+                grupo.style.display = 'block';
+                label.innerText = 'Nombre de la protectora';
+                input.placeholder = 'Escribe el nombre de la protectora';
+            } else {
+                grupo.style.display = 'none';
+                input.value = '';
+            }
         }
     </script>
 {% endblock %}
-<form id="form-criador" method="POST" action="{% url 'registro' %}">
-{% csrf_token %}
-
-<input type="hidden" name="tipo" value="criador">
-
-<label>Tipo Criador</label>
-<select name="tipo_criador">
-<option value="REFUGIO">REFUGIO</option>
-<option value="PARTICULAR">PARTICULAR</option>
-<option value="PROTECTORA">PROTECTORA</option>
-</select>
-
-<!-- Campo dinámico -->
-<div id="campo_nombre_criador" style="display:none; margin-top:10px;">
-    <label id="label_dinamico"></label>
-    <input type="text" name="nombre_criador" id="input_dinamico">
-</div>
-
-<script>
-function cambiarCampo() {
-    const tipo = document.querySelector('select[name="tipo_criador"]').value;
-    const campo = document.getElementById("campo_nombre_criador");
-    const label = document.getElementById("label_dinamico");
-    const input = document.getElementById("input_dinamico");
-
-    if (tipo === "REFUGIO") {
-        campo.style.display = "block";
-        label.innerText = "Nombre del refugio";
-        input.placeholder = "Escribe el nombre del refugio";
-    } 
-    else if (tipo === "PARTICULAR") {
-        campo.style.display = "block";
-        label.innerText = "Nombre del particular";
-        input.placeholder = "Escribe el nombre de la persona";
-    } 
-    else if (tipo === "PROTECTORA") {
-        campo.style.display = "block";
-        label.innerText = "Nombre de la protectora";
-        input.placeholder = "Escribe el nombre de la protectora";
-    } 
-    else {
-        campo.style.display = "none";
-    }
-}
-</script>
-
-<label>Nombre</label>
-<input type="text" name="nombre" required>
-
-<label>Apellidos</label>
-<input type="text" name="apellido">
-
-<label>Fecha de Nacimiento</label>
-<input type="date" name="fecha_de_nacimiento">
-
-<label>Correo Electrónico</label>
-<input type="email" name="correo" required>
-
-<label>Teléfono</label>
-<input type="text" name="telefono" required>
-
-<label>Tipo de Identificación</label>
-<select name="tipo_de_identificacion">
-<option value="CC">CC</option>
-<option value="CEDULA_EXTRANJERA">CÉDULA EXTRANJERA</option>
-<option value="PASAPORTE">PASAPORTE</option>
-</select>
-
-<label>Número de Documento</label>
-<input type="text" name="numero_de_identificacion" required>
-
-<label>Nombre del Refugio o Protectora</label>
-<input type="text" name="nombre_refugio" placeholder="Opcional">
-
-<label>Dirección</label>
-<input type="text" name="direccion" required>
-
-<label>Contraseña</label>
-<input type="password" name="password" required>
-
-<label>Confirmar Contraseña</label>
-<input type="password" name="password_confirmation" required>
-
-<button class="submit-btn">Registrar Criador</button>
-
-</form>
-
-<!-- PROPIETARIO -->
-<form id="form-propietario" method="POST" action="{% url 'registro' %}">
-{% csrf_token %}
-
-<input type="hidden" name="tipo" value="propietario">
-
-<label>Nombre</label>
-<input type="text" name="nombre" required>
-
-<label>Apellidos</label>
-<input type="text" name="apellido">
-
-<label>Fecha de Nacimiento</label>
-<input type="date" name="fecha_de_nacimiento">
-
-<label>Correo electrónico</label>
-<input type="email" name="correo" required>
-
-<label>Teléfono</label>
-<input type="text" name="telefono" required>
-
-<label>Tipo de identificación</label>
-<select name="tipo_de_identificacion">
-<option value="CC">CC</option>
-<option value="CEDULA_EXTRANJERA">CÉDULA EXTRANJERA</option>
-<option value="PASAPORTE">PASAPORTE</option>
-</select>
-
-<label>Número de documento</label>
-<input type="text" name="numero_de_identificacion" required>
-
-<label>Dirección</label>
-<input type="text" name="direccion" required>
-
-<label>Contraseña</label>
-<input type="password" name="password" required>
-
-<label>Confirmar Contraseña</label>
-<input type="password" name="password_confirmation" required>
-
-<button class="submit-btn">Registrar Propietario</button>
-
-</form>
-
-<div class="login-link">
-<span>¿Ya tienes cuenta?</span>
-<a href="{% url 'login' %}">Iniciar sesión</a>
-</div>
-
-</div>
-
-<script>
-
-function mostrarFormulario(tipo){
-
-document.getElementById("form-criador").classList.remove("active");
-document.getElementById("form-propietario").classList.remove("active");
-
-document.getElementById("form-"+tipo).classList.add("active");
-
-}
-
-</script>
-
-</body>
-</html>

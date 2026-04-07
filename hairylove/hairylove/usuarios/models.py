@@ -50,6 +50,7 @@ class Criador(models.Model):
     Condiciones_Adopcion = models.TextField(blank=True)
     Informacion_Rescate = models.TextField(blank=True)
     Tipo_Criador = models.CharField(max_length=20, choices=TIPO_CRIADOR_CHOICES, default='Particular')
+    Nombre_Refugio = models.CharField(max_length=200, blank=True)
     Estado_Verificacion = models.CharField(max_length=10, choices=ESTADO_VERIFICACION_CHOICES, default='Pendiente')
     Fecha_Registro = models.DateField(default=date.today)
 

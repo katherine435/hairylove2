@@ -357,10 +357,17 @@ def registro(request):
             )
             
             # Crear perfil específico según tipo
+            tipo_criador = request.POST.get('tipo_criador', 'Particular')
+            nombre_refugio = request.POST.get('nombre_refugio', '').strip()
+
             if tipo == 'Propietario':
                 Propietario.objects.create(user=usuario)
             elif tipo == 'Criador':
-                Criador.objects.create(user=usuario)
+                Criador.objects.create(
+                    user=usuario,
+                    Tipo_Criador=tipo_criador,
+                    Nombre_Refugio=nombre_refugio
+                )
 
             messages.success(request, "Usuario registrado correctamente")
             return redirect('login')
