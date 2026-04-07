@@ -9,6 +9,7 @@ from rest_framework import viewsets, permissions, status, pagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 import openpyxl
+from openpyxl.utils.datetime import from_excel
 from datetime import datetime
 from .models import Mascota, Adopcion, Calificacion, ChatMessage
 from .serializers import MascotaSerializer, AdopcionSerializer
@@ -22,8 +23,46 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from django.contrib.staticfiles.finders import find
 from datetime import datetime, date, timedelta
+from openpyxl.utils.datetime import from_excel
 from io import BytesIO
 from django.db.models import Avg, Count
+
+
+def parse_excel_date(value, workbook=None):
+    """Parsea una fecha proveniente de Excel en un objeto date."""
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, (int, float)):
+        try:
+            return from_excel(value, workbook.epoch if workbook else datetime(1899, 12, 30)).date()
+        except Exception:
+            pass
+    if isinstance(value, str):
+        text = value.strip()
+        if text == '':
+            return None
+        # If it contains time, keep only the date part.
+        text = text.split()[0]
+        formatos = [
+            '%Y-%m-%d', '%Y/%m/%d', '%Y.%m.%d',
+            '%d/%m/%Y', '%d-%m-%Y', '%d.%m.%Y',
+            '%m/%d/%Y', '%m-%d-%Y', '%m.%d.%Y'
+        ]
+        for fmt in formatos:
+            try:
+                return datetime.strptime(text, fmt).date()
+            except ValueError:
+                continue
+        # Try ISO parser fallback for formats like 2020-05-15T00:00:00
+        try:
+            return datetime.fromisoformat(text).date()
+        except Exception:
+            pass
+    raise ValueError(f'No se pudo parsear la fecha: {value}')
 from openpyxl import Workbook
 import random
 
@@ -1178,11 +1217,15 @@ def carga_masiva_mascotas(request):
                             continue
                         
                         # Convertir fecha
-                        try:
-                            fecha_nac = datetime.strptime(fecha_nac_str, '%Y-%m-%d').date() if fecha_nac_str else None
-                        except ValueError:
-                            errores.append(f"Fila {row_num}: Fecha de nacimiento inválida (formato: YYYY-MM-DD)")
-                            continue
+                        fecha_nac = None
+                        if fecha_nac_str is not None and str(fecha_nac_str).strip() != '':
+                            try:
+                                fecha_nac = parse_excel_date(fecha_nac_str, wb)
+                            except Exception:
+                                errores.append(
+                                    f"Fila {row_num}: Fecha de nacimiento inválida (formatos válidos: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY, MM-DD-YYYY)"
+                                )
+                                continue
                         
                         # Crear mascota
                         Mascota.objects.create(
