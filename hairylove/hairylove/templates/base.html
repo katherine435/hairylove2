@@ -286,7 +286,9 @@
                     <!-- Menu de navegación -->
                     <ul class="nav-links">
                         <li><a href="{% url 'index' %}"><i class="fas fa-home"></i> Inicio</a></li>
-                        <li><a href="{% url 'mascotas_adopcion' %}"><i class="fas fa-heart"></i> Adoptar</a></li>
+                        {% if not user.is_authenticated or user.tipo != 'Criador' %}
+                            <li><a href="{% url 'mascotas_adopcion' %}"><i class="fas fa-heart"></i> Adoptar</a></li>
+                        {% endif %}
                         {% if user.is_authenticated %}
                             <li>
                                 {% if user.tipo == 'Propietario' %}
@@ -362,8 +364,9 @@
                     <h4><i class="fas fa-link"></i> Enlaces Rápidos</h4>
                     <ul>
                         <li><a href="{% url 'index' %}">🏠 Inicio</a></li>
-                        <li><a href="{% url 'mascotas_adopcion' %}">❤️ Adoptar Mascota</a></li>
-                        <li><a href="{% url 'formularioServicios' %}">🛎️ Servicios</a></li>
+                        {% if not user.is_authenticated or user.tipo != 'Criador' %}
+                            <li><a href="{% url 'mascotas_adopcion' %}">❤️ Adoptar Mascota</a></li>
+                        {% endif %}
                         <li><a href="{% url 'registro' %}">📝 Registrarse</a></li>
                     </ul>
                 </div>

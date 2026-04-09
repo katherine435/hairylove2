@@ -1,17 +1,809 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Perfil de Propietario</title>
+{% block title %}Perfil del Propietario - Hairy Love{% endblock %}
 
-<link rel="stylesheet" href="{% static 'css/perfilPropietario.css' %}">
+{% block content %}
+<style>
+    /* Colores neutros azul/gris */
+    :root {
+        --color-primario: #4a90a4;
+        --color-primario-claro: #5fa8b8;
+        --color-primario-very-light: #e8f1f7;
+    }
+    
+    /* Reemplazar todos los colores rosa */
+    .specialist-container {
+        display: flex;
+        gap: 30px;
+        max-width: 1300px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+    
+    .profile-card {
+        flex: 0 0 300px;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .profile-img {
+        width: 100%;
+        height: 200px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .profile-name {
+        font-size: 1.5em;
+        color: #333;
+        margin: 15px 0 5px;
+        font-weight: 700;
+    }
+    
+    .profile-title {
+        color: var(--color-primario);
+        font-size: 0.95em;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 12px;
+    }
+    
+    .profile-bio {
+        color: #666;
+        font-size: 0.9em;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+    
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.8em;
+        font-weight: 800;
+        color: var(--color-primario);
+    }
+    
+    .stat-label {
+        font-size: 0.75em;
+        color: #999;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro));
+        color: white;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+    }
+    
+    .rating-section {
+        margin-top: 25px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(74, 144, 164, 0.1), rgba(95, 168, 184, 0.1));
+        border-radius: 12px;
+        border-left: 4px solid var(--color-primario);
+        text-align: center;
+    }
+    
+    .rating-section strong {
+        color: #666;
+    }
+    
+    .dashboard-content {
+        flex: 1;
+    }
+    
+    .dashboard-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .section-header h3 {
+        font-size: 1.3em;
+        color: #333;
+        margin: 0;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro));
+        color: white;
+        padding: 8px 16px;
+        font-size: 0.9em;
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+    }
+    
+    .mascotas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .mascota-card {
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+    }
+    
+    .mascota-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mascota-imagen {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(135deg, var(--color-primario-very-light), #f5f9fb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        overflow: hidden;
+    }
+    
+    .mascota-imagen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .mascota-info {
+        padding: 15px;
+    }
+    
+    .mascota-info h4 {
+        color: var(--color-primario);
+        margin-bottom: 8px;
+        font-size: 1.1em;
+    }
+    
+    .mascota-info p {
+        color: #666;
+        font-size: 0.9em;
+        margin: 5px 0;
+    }
+    
+    .history-list {
+        display: grid;
+        gap: 15px;
+    }
+    
+    .history-item {
+        padding: 20px;
+        border-left: 4px solid var(--color-primario);
+        background: #f9f9f9;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .history-item:hover {
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .history-header h4 {
+        margin: 0;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .status-completed {
+        display: inline-block;
+        background: var(--color-primario-very-light);
+        color: var(--color-primario);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+    
+    .history-details {
+        color: #666;
+        font-size: 0.9em;
+        line-height: 1.6;
+    }
+    
+    .history-details p {
+        margin: 5px 0;
+    }
+    
+    @media (max-width: 1024px) {
+        .specialist-container {
+            flex-direction: column;
+        }
+        
+        .profile-card {
+            flex: none;
+            position: relative;
+            top: auto;
+        }
+    }
+</style>
 
-</head>
+<div class="specialist-container">
 
-<body>
+<!-- PERFIL -->
+<aside class="profile-card">
+
+<div class="profile-img">
+<img src="{% static 'img/perfil.jpg' %}" style="width:100%;height:100%;object-fit:cover;">
+</div>
+
+<h2 class="profile-name">
+{{request.user.nombre}} {{request.user.apellido}}
+</h2>
+
+<span class="profile-title">
+Propietario de Mascotas
+</span>
+
+<p class="profile-bio">
+Amante de los animales y orgulloso dueño de sus mascotas.
+</p>
+
+<div class="profile-stats">
+
+<div class="stat-item">
+<div class="stat-number">{{ total_adoptadas }}</div>
+<div class="stat-label">Mascotas Adoptadas</div>
+</div>
+
+<div class="stat-item">
+<div class="stat-number">{{ total_adopciones }}</div>
+<div class="stat-label">Solicitudes</div>
+</div>
+
+<div class="stat-item">
+<div class="stat-number">0</div>
+<div class="stat-label">Calificaciones</div>
+</div>
+
+</div>
+
+<a href="{% url 'editar_perfil' %}" class="btn btn-primary">✏️ Editar Perfil</a>
+
+<!-- SECCIÓN DE CALIFICACIÓN -->
+<div class="rating-section">
+    <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+        <strong>Calificación Promedio</strong>
+    </div>
+    {% if request.user.total_calificaciones > 0 %}
+        <div style="font-size: 2em; font-weight: bold; color: #FFD700; margin-bottom: 5px;">
+            ⭐ {{ request.user.puntuacion_promedio }}/5
+        </div>
+        <div style="font-size: 0.85em; color: #999;">
+            basado en {{ request.user.total_calificaciones }} calificación{{ request.user.total_calificaciones|pluralize }}
+        </div>
+    {% else %}
+        <div style="font-size: 0.9em; color: #999;">
+            Sin calificaciones aún
+        </div>
+    {% endif %}
+</div>
+
+</aside>
+
+
+<!-- PANEL DERECHO -->
+<main class="dashboard-content">
+
+
+<!-- MASCOTAS ADOPTADAS -->
+<section class="dashboard-section">
+
+<div class="section-header">
+    <h3>🐶 Mis Mascotas Adoptadas</h3>
+    <a href="{% url 'mascotas_adopcion' %}" class="btn btn-secondary">Explorar más mascotas</a>
+</div>
+
+{% if mascotas_adoptadas %}
+<div class="mascotas-grid">
+{% for adopcion in adopciones %}
+    {% if adopcion.Estado == 'Aprobada' %}
+        <div class="mascota-card">
+            <div style="padding: 15px 20px; display: flex; justify-content: flex-end;">
+                <a href="{% url 'chat_mensajes' adopcion.idCriador %}" class="btn btn-secondary" style="padding: 0.65rem 1rem; font-size: 0.9rem;">
+                    💬 Chatear
+                </a>
+            </div>
+
+            <div class="mascota-imagen">
+                {% if adopcion.idMascota.foto_mascota %}
+                    <img src="{{ adopcion.idMascota.foto_mascota.url }}" alt="{{ adopcion.idMascota.Nombre_Mascota }}">
+                {% else %}
+                    {% if adopcion.idMascota.Especie == 'Perro' %}🐕{% elif adopcion.idMascota.Especie == 'Gato' %}🐈{% elif adopcion.idMascota.Especie == 'Conejo' %}🐰{% else %}🐾{% endif %}
+                {% endif %}
+            </div>
+            
+            <div class="mascota-info">
+                <h4>{{ adopcion.idMascota.Nombre_Mascota }}</h4>
+                <p><strong>Especie:</strong> {{ adopcion.idMascota.Especie }}</p>
+                <p><strong>Raza:</strong> {{ adopcion.idMascota.Raza }}</p>
+                <p><strong>Tamaño:</strong> {{ adopcion.idMascota.Tamaño }}</p>
+                <p><strong>Género:</strong> {{ adopcion.idMascota.Genero }}</p>
+                
+                <a href="{% url 'descargar_reporte_adopcion' adopcion.idAdopcion %}" class="btn btn-primary" style="margin-top: 10px; font-size: 0.85rem;">
+                    📄 Descargar PDF
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+</div>
+{% else %}
+<p style="color: #999; text-align: center; padding: 30px;">
+    Aún no tienes mascotas adoptadas. <a href="{% url 'mascotas_adopcion' %}" style="color: var(--color-primario); text-decoration: underline;">Explora las mascotas disponibles</a>
+</p>
+{% endif %}
+
+</section>
+
+
+<!-- ADOPCIONES -->
+<section class="dashboard-section">
+
+<div class="section-header">
+<h3>❤️ Solicitudes Recientes</h3>
+</div>
+
+<div class="history-list">
+
+{% if adopciones %}
+    {% for adopcion in adopciones %}
+
+    <div class="history-item">
+
+    <div class="history-header">
+
+    <h4>
+    {{ adopcion.idMascota.Nombre_Mascota }}
+    </h4>
+
+    <span class="status-completed">
+    {{ adopcion.Estado }}
+    </span>
+
+    </div>
+
+    <div class="history-details">
+
+    <p>
+    <strong>Especie:</strong>
+    {{ adopcion.idMascota.Especie }}
+    </p>
+
+    <p>
+    <strong>Raza:</strong>
+    {{ adopcion.idMascota.Raza }}
+    </p>
+
+    <p>
+    <strong>Fecha Solicitud:</strong>
+    {{ adopcion.Fecha_Solicitud }}
+    </p>
+
+    </div>
+
+    {% if adopcion.Estado == 'Aprobada' %}
+    <a href="{% url 'descargar_reporte_adopcion' adopcion.idAdopcion %}" class="btn btn-primary" style="margin-top: 10px; font-size: 0.85rem;">
+    📄 Descargar Reporte PDF
+    </a>
+    {% endif %}
+
+    </div>
+
+    {% endfor %}
+{% else %}
+    <p style="color: #999; text-align: center; padding: 20px;">
+        No hay solicitudes de adopción aún.
+    </p>
+{% endif %}
+
+</div>
+
+</section>
+
+<!-- SECCIÓN DE CALIFICACIONES RECIBIDAS -->
+<section class="dashboard-section">
+<div class="section-header">
+<h3>⭐ Calificaciones Recibidas</h3>
+</div>
+
+{% if calificaciones_recibidas %}
+<div class="history-list">
+{% for calificacion in calificaciones_recibidas %}
+<div class="history-item">
+    <div class="history-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2em;">
+                {{ calificacion.usuario_califica.nombre|first|upper }}
+            </div>
+            <div>
+                <h5 style="margin: 0; color: #333; font-size: 0.95em; font-weight: 600;">
+                    {{ calificacion.usuario_califica.nombre }} {{ calificacion.usuario_califica.apellido }}
+                </h5>
+                <p style="margin: 2px 0 0; color: #999; font-size: 0.8em;">
+                    {{ calificacion.fecha_creacion|date:"d/m/Y H:i" }}
+                </p>
+            </div>
+        </div>
+        <div style="font-weight: 700; font-size: 1.1em; color: #FFD700;">
+            {% for _ in "x"|rjust:calificacion.puntuacion %}⭐{% endfor %} {{ calificacion.puntuacion }}/5
+        </div>
+    </div>
+    
+    {% if calificacion.comentario %}
+    <div style="color: #666; font-size: 0.9em; line-height: 1.5; padding: 12px; background: #f9f9f9; border-radius: 8px; border-left: 3px solid var(--color-primario); margin-top: 10px;">
+        <strong>💬 Comentario:</strong> {{ calificacion.comentario }}
+    </div>
+    {% endif %}
+    
+    {% if calificacion.adopcion.idMascota %}
+    <p style="font-size: 0.85em; color: #999; margin-top: 8px;">
+        🐾 Mascota: <strong>{{ calificacion.adopcion.idMascota.Nombre_Mascota }}</strong>
+    </p>
+    {% endif %}
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p style="color: #999; text-align: center; padding: 30px;">
+    📭 Aún no tienes calificaciones. ¡Completa adopciones y pide a otros que te califiquen!
+</p>
+{% endif %}
+
+</section>
+
+</main>
+
+</div>
+
+{% endblock %}
+    /* Colores neutros azul/gris */
+    :root {
+        --color-primario: #4a90a4;
+        --color-primario-claro: #5fa8b8;
+        --color-primario-very-light: #e8f1f7;
+    }
+    
+    /* Reemplazar todos los colores rosa */
+    .specialist-container {
+        display: flex;
+        gap: 30px;
+        max-width: 1300px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+    
+    .profile-card {
+        flex: 0 0 300px;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+    
+    .profile-img {
+        width: 100%;
+        height: 200px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    
+    .profile-name {
+        font-size: 1.5em;
+        color: #333;
+        margin: 15px 0 5px;
+        font-weight: 700;
+    }
+    
+    .profile-title {
+        color: var(--color-primario);
+        font-size: 0.95em;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 12px;
+    }
+    
+    .profile-bio {
+        color: #666;
+        font-size: 0.9em;
+        line-height: 1.5;
+        margin-bottom: 20px;
+    }
+    
+    .profile-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.8em;
+        font-weight: 800;
+        color: var(--color-primario);
+    }
+    
+    .stat-label {
+        font-size: 0.75em;
+        color: #999;
+        text-transform: uppercase;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+    
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 600;
+        text-align: center;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro));
+        color: white;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+    }
+    
+    .rating-section {
+        margin-top: 25px;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(74, 144, 164, 0.1), rgba(95, 168, 184, 0.1));
+        border-radius: 12px;
+        border-left: 4px solid var(--color-primario);
+        text-align: center;
+    }
+    
+    .rating-section strong {
+        color: #666;
+    }
+    
+    .dashboard-content {
+        flex: 1;
+    }
+    
+    .dashboard-section {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 30px;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .section-header h3 {
+        font-size: 1.3em;
+        color: #333;
+        margin: 0;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro));
+        color: white;
+        padding: 8px 16px;
+        font-size: 0.9em;
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(74, 144, 164, 0.3);
+    }
+    
+    .mascotas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .mascota-card {
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+    }
+    
+    .mascota-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .mascota-imagen {
+        width: 100%;
+        height: 180px;
+        background: linear-gradient(135deg, var(--color-primario-very-light), #f5f9fb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        overflow: hidden;
+    }
+    
+    .mascota-imagen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .mascota-info {
+        padding: 15px;
+    }
+    
+    .mascota-info h4 {
+        color: var(--color-primario);
+        margin-bottom: 8px;
+        font-size: 1.1em;
+    }
+    
+    .mascota-info p {
+        color: #666;
+        font-size: 0.9em;
+        margin: 5px 0;
+    }
+    
+    .history-list {
+        display: grid;
+        gap: 15px;
+    }
+    
+    .history-item {
+        padding: 20px;
+        border-left: 4px solid var(--color-primario);
+        background: #f9f9f9;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .history-item:hover {
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .history-header h4 {
+        margin: 0;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .status-completed {
+        display: inline-block;
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+        font-weight: 600;
+    }
+    
+    .status-completed {
+        background: var(--color-primario-very-light);
+        color: var(--color-primario);
+    }
+    
+    .history-details {
+        color: #666;
+        font-size: 0.9em;
+        line-height: 1.6;
+    }
+    
+    .history-details p {
+        margin: 5px 0;
+    }
+    
+    @media (max-width: 1024px) {
+        .specialist-container {
+            flex-direction: column;
+        }
+        
+        .profile-card {
+            flex: none;
+            position: relative;
+            top: auto;
+        }
+    }
+</style>
 
 <!-- NAVBAR -->
 <nav class="navbar">
@@ -23,8 +815,9 @@
 
 <div class="nav-links">
 <a href="{% url 'index' %}" class="nav-link">Inicio</a>
-<a href="{% url 'mascotas_adopcion' %}" class="nav-link">Adoptar</a>
-<a href="{% url 'formularioServicios' %}" class="nav-link">Servicios</a>
+{% if not user.is_authenticated or user.tipo != 'Criador' %}
+    <a href="{% url 'mascotas_adopcion' %}" class="nav-link">Adoptar</a>
+{% endif %}
 </div>
 
 <div class="user-info">
@@ -83,7 +876,7 @@ Amante de los animales y orgulloso dueño de sus mascotas.
 
 <div class="stat-item">
 <div class="stat-number">0</div>
-<div class="stat-label">Servicios</div>
+<div class="stat-label">Calificaciones</div>
 </div>
 
 </div>
@@ -91,14 +884,7 @@ Amante de los animales y orgulloso dueño de sus mascotas.
 <a href="{% url 'editar_perfil' %}" class="btn btn-primary">✏️ Editar Perfil</a>
 
 <!-- SECCIÓN DE CALIFICACIÓN -->
-<div class="rating-section" style="
-    margin-top: 25px;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 143, 188, 0.1));
-    border-radius: 12px;
-    border-left: 4px solid #FF6B9D;
-    text-align: center;
-">
+<div class="rating-section">
     <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
         <strong>Calificación Promedio</strong>
     </div>
@@ -126,9 +912,9 @@ Amante de los animales y orgulloso dueño de sus mascotas.
 <!-- MASCOTAS ADOPTADAS -->
 <section class="dashboard-section">
 
-<div class="section-header" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+<div class="section-header">
     <h3>🐶 Mis Mascotas Adoptadas</h3>
-    <a href="{% url 'mascotas_adopcion_disponibles' %}" class="btn btn-secondary" style="background: #ff6b9d; color: white; padding: 0.6rem 1rem; border-radius: 999px; font-size: 0.95rem; text-decoration:none; white-space:nowrap;">Explorar más mascotas</a>
+    <a href="{% url 'mascotas_adopcion' %}" class="btn btn-secondary">Explorar más mascotas</a>
 </div>
 
 {% if mascotas_adoptadas %}
@@ -137,7 +923,7 @@ Amante de los animales y orgulloso dueño de sus mascotas.
     {% if adopcion.Estado == 'Aprobada' %}
         <div class="mascota-card">
             <div style="padding: 15px 20px; display: flex; justify-content: flex-end;">
-                <a href="{% url 'chat_mensajes' adopcion.idCriador %}" class="btn btn-secondary" style="background: #ff6b9d; color: white; padding: 0.65rem 1rem; border-radius: 999px; text-decoration: none; font-size: 0.9rem; font-weight: 700;">
+                <a href="{% url 'chat_mensajes' adopcion.idCriador %}" class="btn btn-secondary" style="padding: 0.65rem 1rem; font-size: 0.9rem;">
                     💬 Chatear
                 </a>
             </div>
@@ -146,18 +932,18 @@ Amante de los animales y orgulloso dueño de sus mascotas.
                 {% if adopcion.idMascota.foto_mascota %}
                     <img src="{{ adopcion.idMascota.foto_mascota.url }}" alt="{{ adopcion.idMascota.Nombre_Mascota }}">
                 {% else %}
-                    <div class="placeholder">{{ adopcion.idMascota.Especie|first|upper }}</div>
+                    {% if adopcion.idMascota.Especie == 'Perro' %}🐕{% elif adopcion.idMascota.Especie == 'Gato' %}🐈{% elif adopcion.idMascota.Especie == 'Conejo' %}🐰{% else %}🐾{% endif %}
                 {% endif %}
             </div>
             
             <div class="mascota-info">
-                <h4 style="color: #FF6B9D; margin-bottom: 8px;">{{ adopcion.idMascota.Nombre_Mascota }}</h4>
+                <h4>{{ adopcion.idMascota.Nombre_Mascota }}</h4>
                 <p><strong>Especie:</strong> {{ adopcion.idMascota.Especie }}</p>
                 <p><strong>Raza:</strong> {{ adopcion.idMascota.Raza }}</p>
                 <p><strong>Tamaño:</strong> {{ adopcion.idMascota.Tamaño }}</p>
                 <p><strong>Género:</strong> {{ adopcion.idMascota.Genero }}</p>
                 
-                <a href="{% url 'descargar_reporte_adopcion' adopcion.idAdopcion %}" class="btn btn-primary" style="margin-top: 10px; display: inline-block; font-size: 0.85rem; width: 100%; text-align: center;">
+                <a href="{% url 'descargar_reporte_adopcion' adopcion.idAdopcion %}" class="btn btn-primary" style="margin-top: 10px; font-size: 0.85rem;">
                     📄 Descargar PDF
                 </a>
             </div>
@@ -167,7 +953,7 @@ Amante de los animales y orgulloso dueño de sus mascotas.
 </div>
 {% else %}
 <p style="color: #999; text-align: center; padding: 30px;">
-    Aún no tienes mascotas adoptadas. <a href="{% url 'mascotas_adopcion_disponibles' %}" style="color: #FF6B9D; text-decoration: underline;">Explora las mascotas disponibles</a>
+    Aún no tienes mascotas adoptadas. <a href="{% url 'mascotas_adopcion' %}" style="color: var(--color-primario); text-decoration: underline;">Explora las mascotas disponibles</a>
 </p>
 {% endif %}
 
@@ -220,7 +1006,7 @@ Amante de los animales y orgulloso dueño de sus mascotas.
     </div>
 
     {% if adopcion.Estado == 'Aprobada' %}
-    <a href="{% url 'descargar_reporte_adopcion' adopcion.idAdopcion %}" class="btn btn-primary" style="margin-top: 10px; display: inline-block; font-size: 0.85rem;">
+    <a href="{% url 'descargar_reporte_adopcion' adopcion.idAdopcion %}" class="btn btn-primary" style="margin-top: 10px; font-size: 0.85rem;">
     📄 Descargar Reporte PDF
     </a>
     {% endif %}
@@ -238,43 +1024,19 @@ Amante de los animales y orgulloso dueño de sus mascotas.
 
 </section>
 
-
-
-<!-- SERVICIOS -->
-<section class="dashboard-section">
-
-<div class="section-header">
-<h3>🛎️ Servicios Solicitados</h3>
-</div>
-
-<a href="{% url 'formularioServicios' %}" class="service-btn-compact">
-Solicitar Nuevo Servicio
-</a>
-
-<div class="history-list">
-<p style="color: #999; text-align: center; padding: 20px;">
-    No hay servicios solicitados. <a href="{% url 'formularioServicios' %}" style="color: #FF6B9D; text-decoration: underline;">Solicita un servicio aquí</a>
-</p>
-</div>
-
-</section>
-
 <!-- SECCIÓN DE CALIFICACIONES RECIBIDAS -->
 <section class="dashboard-section">
 <div class="section-header">
 <h3>⭐ Calificaciones Recibidas</h3>
-<a href="{% url 'estadisticas_calificaciones' %}" class="btn btn-primary btn-sm" style="border-radius: 25px; padding: 8px 20px; font-size: 0.9em;">
-    <i class="fas fa-chart-bar"></i> Ver Estadísticas Completas
-</a>
 </div>
 
 {% if calificaciones_recibidas %}
-<div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+<div class="history-list">
 {% for calificacion in calificaciones_recibidas %}
-<div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 4px solid #FFD700;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+<div class="history-item">
+    <div class="history-header">
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #FF6B9D, #FF8FBC); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2em;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primario), var(--color-primario-claro)); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2em;">
                 {{ calificacion.usuario_califica.nombre|first|upper }}
             </div>
             <div>
@@ -292,7 +1054,7 @@ Solicitar Nuevo Servicio
     </div>
     
     {% if calificacion.comentario %}
-    <div style="color: #666; font-size: 0.9em; line-height: 1.5; padding: 12px; background: #f9f9f9; border-radius: 8px; border-left: 3px solid #FFD700;">
+    <div style="color: #666; font-size: 0.9em; line-height: 1.5; padding: 12px; background: #f9f9f9; border-radius: 8px; border-left: 3px solid var(--color-primario); margin-top: 10px;">
         <strong>💬 Comentario:</strong> {{ calificacion.comentario }}
     </div>
     {% endif %}
@@ -319,3 +1081,4 @@ Solicitar Nuevo Servicio
 
 </body>
 </html>
+       

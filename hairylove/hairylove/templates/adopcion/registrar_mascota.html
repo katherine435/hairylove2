@@ -316,11 +316,33 @@
                 {% endif %}
             </div>
             
-            <!-- FOTO -->
+            <!-- FOTO CON PREVIEW -->
             <div class="form-group">
-                <label for="{{ form.foto_mascota.id_for_label }}">{{ form.foto_mascota.label }}</label>
-                {{ form.foto_mascota }}
-                <small style="color: #999;">Se recomienda una foto clara del rostro de la mascota</small>
+                <label for="{{ form.foto_mascota.id_for_label }}" class="required-field">{{ form.foto_mascota.label }}</label>
+                
+                <!-- Container para la preview -->
+                <div id="fotoPreviewContainer" style="margin-bottom: 15px; display: none;">
+                    <div style="background: #f5f5f5; border-radius: 10px; padding: 15px; text-align: center;">
+                        <img id="fotoPreview" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 8px; margin-bottom: 10px;">
+                        <div>
+                            <small id="fotoInfo" style="color: #666;"></small>
+                            <br>
+                            <button type="button" id="btnLimpiarFoto" style="background: #f44336; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">🗑️ Cambiar foto</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input de archivo -->
+                <div style="position: relative; border: 2px dashed #FF6B9D; border-radius: 10px; padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; background: #fafafa;" id="dropZone">
+                    <input type="file" id="{{ form.foto_mascota.id_for_label }}" name="foto_mascota" accept="image/*" style="display: none;">
+                    <div id="uploadText">
+                        <div style="font-size: 2em; margin-bottom: 10px;">📸</div>
+                        <p style="margin: 0; color: #333; font-weight: 600;">Haz clic o arrastra una imagen aquí</p>
+                        <small style="color: #999;">JPG, PNG - Máximo 5MB</small>
+                    </div>
+                </div>
+                
+                <small style="color: #999; display: block; margin-top: 10px;">✓ Se recomienda una foto clara del rostro de la mascota</small>
                 {% if form.foto_mascota.errors %}
                     <div class="error-message">{{ form.foto_mascota.errors }}</div>
                 {% endif %}
@@ -424,12 +446,102 @@
 </div>
 
 <script>
-    document.getElementById('formularioRegistro').addEventListener('submit', function(e) {
-        const nombre = document.getElementById('{{ form.Nombre_Mascota.id_for_label }}').querySelector('input').value;
+    const fileInput = document.getElementById('id_foto_mascota');
+    const dropZone = document.getElementById('dropZone');
+    const previewContainer = document.getElementById('fotoPreviewContainer');
+    const preview = document.getElementById('fotoPreview');
+    const fotoInfo = document.getElementById('fotoInfo');
+    const uploadText = document.getElementById('uploadText');
+    const btnLimpiarFoto = document.getElementById('btnLimpiarFoto');
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+    // Abrir selector de archivos al hacer clic en la zona
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // Manejo de selección de archivo
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            validarYMostrarFoto(file);
+        }
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#FF6B9D';
+        dropZone.style.background = '#fff0f5';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#FF6B9D';
+        dropZone.style.background = '#fafafa';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#FF6B9D';
+        dropZone.style.background = '#fafafa';
         
-        if (!nombre.trim()) {
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            // Asignar el archivo al input
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+            validarYMostrarFoto(file);
+        }
+    });
+
+    // Validar y mostrar foto
+    function validarYMostrarFoto(file) {
+        // Validar tipo de archivo
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            alert('❌ Tipo de archivo no válido. Solo se aceptan: JPG, PNG, GIF, WebP');
+            fileInput.value = '';
+            return;
+        }
+
+        // Validar tamaño
+        if (file.size > MAX_FILE_SIZE) {
+            alert(`❌ Archivo muy grande. Máximo permitido: 5MB (Tu archivo: ${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+            fileInput.value = '';
+            return;
+        }
+
+        // Mostrar preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+            fotoInfo.innerHTML = `<strong>${file.name}</strong> (${sizeMB}MB) ✓`;
+            previewContainer.style.display = 'block';
+            uploadText.style.display = 'none';
+            dropZone.style.borderStyle = 'solid';
+            dropZone.style.borderColor = '#4CAF50';
+            dropZone.style.background = '#f0f8f0';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Limpiar foto
+    btnLimpiarFoto.addEventListener('click', () => {
+        fileInput.value = '';
+        previewContainer.style.display = 'none';
+        uploadText.style.display = 'block';
+        dropZone.style.borderStyle = 'dashed';
+        dropZone.style.borderColor = '#FF6B9D';
+        dropZone.style.background = '#fafafa';
+    });
+
+    // Validación del formulario
+    document.getElementById('formularioRegistro').addEventListener('submit', function(e) {
+        const nombre = document.getElementById('id_Nombre_Mascota').value.trim();
+        
+        if (!nombre) {
             e.preventDefault();
-            alert('Por favor, completa los campos requeridos');
+            alert('❌ Por favor, ingresa el nombre de la mascota');
             return false;
         }
     });

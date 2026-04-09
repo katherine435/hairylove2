@@ -99,7 +99,7 @@ def registrar_mascota_adopcion(request):
         form = MascotaAdopcionForm(request.POST, request.FILES)
         if form.is_valid():
             mascota = form.save(commit=False)
-            mascota.idCriador = usuario.idUsuario
+            mascota.idCriador = criador.idCriador
             mascota.disponible = True
             mascota.fecha_creacion = timezone.now()
             mascota.save()
@@ -122,12 +122,12 @@ def mis_mascotas_adopcion(request):
     
     usuario = request.user
     try:
-        Criador.objects.get(user=usuario)
+        criador = Criador.objects.get(user=usuario)
     except:
         messages.error(request, "Solo los criadores pueden acceder a esta función")
         return redirect('index')
     
-    mascotas = Mascota.objects.filter(idCriador=usuario.idUsuario, disponible=True)
+    mascotas = Mascota.objects.filter(idCriador=criador.idCriador, disponible=True)
     context = {'mascotas': mascotas}
     return render(request, 'adopcion/mis_mascotas_adopcion.html', context)
 

@@ -833,7 +833,7 @@ def formularioServicios(request):
 
 def mascotas_adopcion(request):
     """Vista para mostrar todas las mascotas disponibles para adopción"""
-    mascotas = Mascota.objects.all()
+    mascotas = Mascota.objects.filter(disponible=True)
     
     # Filtros
     especie = request.GET.get('especie')

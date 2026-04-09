@@ -255,12 +255,15 @@
         </p>
 
         <div class="hero-buttons">
-            <a href="{% url 'formularioServicios' %}" class="btn-primary">
-                <i class="fas fa-heartbeat"></i> Quiero un servicio
-            </a>
-            <a href="{% url 'mascotas_adopcion' %}" class="btn-pink">
-                <i class="fas fa-paw"></i> Quiero adoptar
-            </a>
+            {% if user.is_authenticated and user.tipo == 'Criador' %}
+                <a href="{% url 'registrar_mascota_adopcion' %}" class="btn-pink">
+                    <i class="fas fa-paw"></i> Registrar mascota
+                </a>
+            {% else %}
+                <a href="{% url 'mascotas_adopcion' %}" class="btn-pink">
+                    <i class="fas fa-paw"></i> Quiero adoptar
+                </a>
+            {% endif %}
         </div>
     </div>
 
@@ -327,9 +330,13 @@
                             <i class="far fa-heart"></i>
                         </button>
                         <div style="background: linear-gradient(135deg, var(--light-bg), var(--light-purple)); height: 200px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                            <div style="font-size: 4rem; animation: bounce-soft 0.8s ease infinite;">
-                                {% if 'Gato' in mascota.Especie %}🐱{% elif 'Perro' in mascota.Especie %}🐕{% else %}🐾{% endif %}
-                            </div>
+                            {% if mascota.foto_mascota %}
+                                <img src="{{ mascota.foto_mascota.url }}" alt="{{ mascota.Nombre_Mascota }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="font-size: 4rem; animation: bounce-soft 0.8s ease infinite; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+                                    {% if mascota.Especie == 'Gato' %}🐱{% elif mascota.Especie == 'Perro' %}🐕{% else %}🐾{% endif %}
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="mascota-info">
                             <h3>{{ mascota.Nombre_Mascota }}</h3>
@@ -410,7 +417,7 @@
                     <i class="fas fa-network-wired"></i>
                 </div>
                 <h3>Comunidad Conectada</h3>
-                <p>Accede a servicios especializados y mantén contacto con otros adoptantes.</p>
+                <p>Conecta con otros adoptantes y comparte experiencias con tu mascota.</p>
             </div>
 
             <div class="servicio-card" style="text-align: center;">
@@ -455,17 +462,14 @@
     <section class="section" style="background: linear-gradient(135deg, var(--primary-purple), var(--light-purple)); border-radius: 20px; color: white; text-align: center;" data-animate>
         <h2 style="color: white;"><i class="fas fa-plus-circle"></i> Comienza tu viaje con nosotros</h2>
         <p style="font-size: 1.2rem; margin: 20px 0 40px;">
-            Ya sea que quieras adoptar, ofertar servicios o ayudar como criador, tenemos un lugar para ti.
+            Ya sea que quieras adoptar o ayudar como criador, tenemos un lugar para ti.
         </p>
         
         <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
             <a href="{% url 'mascotas_adopcion' %}" class="btn-primary" style="background: white; color: var(--primary-purple); animation: bounce-soft 0.6s ease;">
                 <i class="fas fa-paw"></i> Adoptar Mascota
             </a>
-            <a href="{% url 'formularioServicios' %}" class="btn-outline" style="border-color: white; color: white; animation: bounce-soft 0.6s ease 0.1s both;">
-                <i class="fas fa-briefcase"></i> Ofrecer Servicios
-            </a>
-            <a href="{% url 'registro' %}" class="btn-outline" style="border-color: white; color: white; animation: bounce-soft 0.6s ease 0.2s both;">
+            <a href="{% url 'registro' %}" class="btn-outline" style="border-color: white; color: white; animation: bounce-soft 0.6s ease 0.1s both;">
                 <i class="fas fa-user-plus"></i> Unirme como Criador
             </a>
         </div>

@@ -365,14 +365,18 @@
             {% for mascota in mascotas %}
                 <div class="mascota-card">
                     <div class="mascota-imagen {% if mascota.Especie|lower == 'perro' %}dog{% elif mascota.Especie|lower == 'gato' %}cat{% else %}other{% endif %}">
-                        <div class="mascota-placeholder">
-                            <div class="mascota-placeholder-icon">
-                                {% if mascota.Especie|lower == 'perro' %}🐶{% elif mascota.Especie|lower == 'gato' %}🐱{% else %}🐾{% endif %}
+                        {% if mascota.foto_mascota %}
+                            <img src="{{ mascota.foto_mascota.url }}" alt="{{ mascota.Nombre_Mascota }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="mascota-placeholder">
+                                <div class="mascota-placeholder-icon">
+                                    {% if mascota.Especie|lower == 'perro' %}🐶{% elif mascota.Especie|lower == 'gato' %}🐱{% else %}🐾{% endif %}
+                                </div>
+                                <div class="mascota-placeholder-text">
+                                    {% if mascota.Especie %}{{ mascota.Especie }}{% else %}Mascota{% endif %}
+                                </div>
                             </div>
-                            <div class="mascota-placeholder-text">
-                                {% if mascota.Especie %}{{ mascota.Especie }}{% else %}Mascota{% endif %}
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="mascota-info">
