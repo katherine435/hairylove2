@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Solicitudes de Adopción - {{ mascota.Nombre_Mascota }} - Hairy Love{% endblock %}
+
+{% block content %}
+<style>
+    .solicitudes-container {
+        max-width: 1000px;
+        margin: 80px auto 40px;
+        padding: 0 20px;
+    }
+    
+    .solicitudes-header {
+        text-align: center;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.8s ease;
+    }
+    
+    .solicitudes-header h1 {
+        font-size: 2.2em;
+        color: #2c3;
+        margin-bottom: 10px;
+        font-weight: 800;
+    }
+    
+    .solicitudes-header p {
+        font-size: 1.1em;
+        color: #666;
+    }
+    
+    .mascota-resumen {
+        background: linear-gradient(135deg, #FFB6C1, #FF69B4);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 40px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.2);
+    }
+    
+    .mascota-resumen-info {
+        flex: 1;
+    }
+    
+    .mascota-resumen-nombre {
+        font-size: 1.5em;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    
+    .mascota-resumen-raza {
+        font-size: 1em;
+        opacity: 0.9;
+    }
+    
+    .solicitudes-lista {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .solicitud-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 5px solid #FF6B9D;
+    }
+    
+    .solicitud-card:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(-3px);
+    }
+    
+    .solicitud-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .solicitud-info-solicitante {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .solicitud-nombre {
+        font-size: 1.3em;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .solicitud-email {
+        color: #666;
+        font-size: 0.95em;
+        margin-bottom: 3px;
+    }
+    
+    .solicitud-estado {
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-size: 0.85em;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .estado-pendiente {
+        background: #FFF3CD;
+        color: #856404;
+        border: 1px solid #FFEAA7;
+    }
+    
+    .estado-aprobada {
+        background: #D4EDDA;
+        color: #155724;
+        border: 1px solid #C3E6CB;
+    }
+    
+    .estado-rechazada {
+        background: #F8D7DA;
+        color: #721C24;
+        border: 1px solid #F5C6CB;
+    }
+    
+    .solicitud-detalles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .solicitud-detalles {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .detalle-item {
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+    
+    .detalle-label {
+        color: #999;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+    
+    .detalle-valor {
+        color: #333;
+        font-weight: 600;
+        font-size: 1em;
+    }
+    
+    .solicitud-motivo {
+        background: #f0f0f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .solicitud-motivo-label {
+        color: #666;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .solicitud-motivo-texto {
+        color: #555;
+        line-height: 1.6;
+    }
+    
+    .solicitud-acciones {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .btn-accion {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-chat {
+        background: #6f42c1;
+        color: white;
+    }
+    
+    .btn-chat:hover {
+        background: #5a32a3;
+        transform: translateY(-2px);
+    }
+    
+    .btn-aprobar {
+        background: #4CAF50;
+        color: white;
+    }
+    
+    .btn-aprobar:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+    }
+    
+    .btn-rechazar {
+        background: #f44336;
+        color: white;
+    }
+    
+    .btn-rechazar:hover {
+        background: #da190b;
+        transform: translateY(-2px);
+    }
+    
+    .sin-solicitudes {
+        background: white;
+        border-radius: 15px;
+        padding: 60px 40px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .sin-solicitudes-icono {
+        font-size: 3em;
+        margin-bottom: 15px;
+    }
+    
+    .sin-solicitudes-titulo {
+        font-size: 1.5em;
+        color: #333;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .sin-solicitudes-texto {
+        color: #666;
+        margin-bottom: 20px;
+    }
+    
+    .btn-volver {
+        background: #999;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 50px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin-bottom: 30px;
+    }
+    
+    .btn-volver:hover {
+        background: #777;
+        transform: translateY(-2px);
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="solicitudes-container">
+    <a href="{% url 'detalles_mascota' mascota.idMascota %}" class="btn-volver">← Volver a la mascota</a>
+    
+    <div class="solicitudes-header">
+        <h1>📋 Solicitudes de Adopción</h1>
+        <p>Gestiona las solicitudes para {{ mascota.Nombre_Mascota }}</p>
+    </div>
+    
+    <div class="mascota-resumen">
+        <div class="mascota-resumen-info">
+            <div class="mascota-resumen-nombre">🐾 {{ mascota.Nombre_Mascota }}</div>
+            <div class="mascota-resumen-raza">{{ mascota.Especie }} - {{ mascota.Raza }}</div>
+        </div>
+        <div style="text-align: right; font-size: 0.9em; opacity: 0.9;">
+            Total de solicitudes: <strong>{{ solicitudes.count }}</strong>
+        </div>
+    </div>
+    
+    {% if solicitudes %}
+        <div class="solicitudes-lista" style="animation: fadeInUp 0.8s ease;">
+            {% for solicitud in solicitudes %}
+                <div class="solicitud-card">
+                    <div class="solicitud-header">
+                        <div class="solicitud-info-solicitante">
+                            <div class="solicitud-nombre">
+                                {% if solicitud.usuario_datos %}
+                                    👤 {{ solicitud.usuario_datos.nombre }}
+                                {% else %}
+                                    👤 Usuario (ID: {{ solicitud.idPropietario }})
+                                {% endif %}
+                            </div>
+                            <div class="solicitud-email">
+                                {% if solicitud.usuario_datos %}
+                                    📧 {{ solicitud.usuario_datos.email }}
+                                {% else %}
+                                    ID Propietario: {{ solicitud.idPropietario }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="solicitud-estado {% if solicitud.Estado == 'Pendiente' %}estado-pendiente{% elif solicitud.Estado == 'Aprobada' %}estado-aprobada{% else %}estado-rechazada{% endif %}">
+                            {{ solicitud.Estado }}
+                        </div>
+                    </div>
+                    
+                    <div class="solicitud-detalles">
+                        <div class="detalle-item">
+                            <div class="detalle-label">Fecha de Solicitud</div>
+                            <div class="detalle-valor">{{ solicitud.Fecha_Solicitud|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="detalle-item">
+                            <div class="detalle-label">Estado de Solicitud</div>
+                            <div class="detalle-valor">{{ solicitud.Estado_Solicitud }}</div>
+                        </div>
+                        <div class="detalle-item">
+                            <div class="detalle-label">Lugar de Vivienda</div>
+                            <div class="detalle-valor">{{ solicitud.Lugar_Vivienda|truncatewords:5 }}</div>
+                        </div>
+                        <div class="detalle-item">
+                            <div class="detalle-label">Motivo de Adopción</div>
+                            <div class="detalle-valor">{{ solicitud.Motivo_Adopción|truncatewords:5 }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if solicitud.Motivo_Adopción %}
+                        <div class="solicitud-motivo">
+                            <label class="solicitud-motivo-label">💬 Motivo de Adopción:</label>
+                            <div class="solicitud-motivo-texto">{{ solicitud.Motivo_Adopción }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if solicitud.Estado == 'Pendiente' %}
+                        <div class="solicitud-acciones">
+                            {% if solicitud.usuario_datos %}
+                                <a href="{% url 'chat_mensajes' solicitud.usuario_datos.idUsuario %}" class="btn-accion btn-chat">
+                                    💬 Chatear
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'aprobar_solicitud_adopcion' solicitud.idAdopcion %}" class="btn-accion btn-aprobar">
+                                ✓ Aprobar
+                            </a>
+                            <a href="{% url 'rechazar_solicitud_adopcion' solicitud.idAdopcion %}" class="btn-accion btn-rechazar">
+                                ✗ Rechazar
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="solicitud-acciones">
+                            {% if solicitud.usuario_datos %}
+                                <a href="{% url 'chat_mensajes' solicitud.usuario_datos.idUsuario %}" class="btn-accion btn-chat">
+                                    💬 Chatear
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="sin-solicitudes">
+            <div class="sin-solicitudes-icono">📭</div>
+            <div class="sin-solicitudes-titulo">No hay solicitudes todavía</div>
+            <div class="sin-solicitudes-texto">
+                Cuando alguien solicite adoptar a {{ mascota.Nombre_Mascota }}, aparecerá aquí.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

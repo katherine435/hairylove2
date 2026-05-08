@@ -17,7 +17,7 @@ class SolicitudServicioAdmin(admin.ModelAdmin):
 
 @admin.register(RespuestaDiagnostico)
 class RespuestaDiagnosticoAdmin(admin.ModelAdmin):
-    list_display = ('idRespuesta', 'solicitud', 'administrador', 'fecha_diagnostico')
+    list_display = ('idRespuesta', 'solicitud', 'especialista', 'fecha_diagnostico')
     list_filter = ('fecha_diagnostico',)
-    search_fields = ('solicitud__mascota__Nombre_Mascota', 'administrador__user__nombre')
+    search_fields = ('solicitud__mascota__Nombre_Mascota', 'especialista__nombre')
     readonly_fields = ('fecha_diagnostico',)

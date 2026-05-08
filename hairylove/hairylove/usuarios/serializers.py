@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Usuario, Propietario, Criador, Administrador
+from .models import Usuario, Propietario, Criador
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -29,13 +29,3 @@ class CriadorSerializer(serializers.ModelSerializer):
                   'Condiciones_Adopcion', 'Tipo_Criador', 
                   'Estado_Verificacion', 'Fecha_Registro']
         read_only_fields = ['idCriador', 'Fecha_Registro']
-
-
-class AdministradorSerializer(serializers.ModelSerializer):
-    user = UsuarioSerializer(read_only=True)
-    
-    class Meta:
-        model = Administrador
-        fields = ['idAdministrador', 'user', 'es_superadmin', 
-                  'fecha_creacion', 'fecha_ultimo_acceso']
-        read_only_fields = ['idAdministrador', 'fecha_creacion']

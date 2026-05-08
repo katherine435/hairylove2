@@ -19,8 +19,19 @@ class Mascota(models.Model):
         ('Excelente', 'Excelente'),
         ('Buena', 'Buena'),
         ('Regular', 'Regular'),
-        ('Mala', 'Mala'),
-        ('Crítica', 'Crítica'),
+       
+    ]
+
+    TAMAÑO_CHOICES = [
+        ('Pequeño', 'Pequeño'),
+        ('Mediano', 'Mediano'),
+        ('Grande', 'Grande'),
+    ]
+
+    TAMAÑO_CHOICES = [
+        ('Pequeño', 'Pequeño'),
+        ('Mediano', 'Mediano'),
+        ('Grande', 'Grande'),
     ]
 
     idMascota = models.AutoField(primary_key=True)
@@ -31,7 +42,7 @@ class Mascota(models.Model):
     Peso = models.FloatField()
     Especie = models.CharField(max_length=50)
     Color = models.CharField(max_length=50)
-    Tamaño = models.CharField(max_length=50)
+    Tamaño = models.CharField(max_length=50, choices=TAMAÑO_CHOICES)
     Historial_Mascota = models.TextField()
     Origen = models.CharField(max_length=10, choices=ORIGEN_CHOICES, default='Criador')
     Tipo_Alimentación = models.CharField(max_length=100)
@@ -51,7 +62,7 @@ class Mascota(models.Model):
     puntuacion = models.DecimalField(max_digits=3, decimal_places=2, default=0)  # Rating 0-5
     numero_personas_interesadas = models.PositiveIntegerField(default=0)
     fecha_creacion = models.DateTimeField(auto_now_add=True, null=True)
-    fecha_actualizacion = models.DateTimeField(auto_now=True)
+    fecha_actualizacion = models.DateTimeField(null=True, blank=True)
 
     @property
     def nombre_limpio(self):

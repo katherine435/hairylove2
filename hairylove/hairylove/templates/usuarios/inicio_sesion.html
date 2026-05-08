@@ -10,16 +10,85 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--lighter-pink), var(--lighter-purple));
+            background-image: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.05)), url("{% static 'images/nueva.png' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
         .login-container {
-            background: white;
-            padding: 50px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.82);
+            padding: 45px 35px 55px;
+            border-radius: 28px;
             width: 100%;
-            max-width: 450px;
-            box-shadow: 0 15px 40px rgba(106, 10, 173, 0.2);
+            max-width: 480px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.18);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.65);
+        }
+
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .adoption-card {
+            width: 100px;
+            height: 96px;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.85);
+            box-shadow: 0 14px 30px rgba(53, 10, 86, 0.18);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            background: rgba(255, 255, 255, 0.42);
+        }
+
+        .adoption-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 35px rgba(53, 10, 86, 0.24);
+        }
+
+        .adoption-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .login-header h1 {
+            font-size: 2.1rem;
+            color: #8a2aa6;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: #6f4a81;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d92d88, #7b4ae2);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            margin-top: 18px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 30px rgba(169, 53, 146, 0.3);
+        }
+
+        .login-footer a {
+            color: #d2248c;
         }
 
         .login-header {
@@ -157,22 +226,14 @@
                 {% csrf_token %}
 
                 <div class="form-input-group">
-                    <label for="tipo"><i class="fas fa-user"></i> Tipo de Usuario</label>
-                    <select name="tipo" id="tipo" required>
-                        <option value="">-- Selecciona tu perfil --</option>
-                        <option value="Propietario"> Propietario</option>
-                        <option value="Criador"> Criador</option>
-                    </select>
-                </div>
-
-                <div class="form-input-group">
                     <label for="correo"><i class="fas fa-envelope"></i> Correo Electrónico</label>
                     <input type="email" name="correo" id="correo" placeholder="tu@email.com" required>
                 </div>
 
-                <div class="form-input-group">
+                <div class="form-input-group password-group">
                     <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
                     <input type="password" name="password" id="password" placeholder="Tu contraseña" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword('password', this)"></i>
                 </div>
 
                 <div style="text-align: right; margin-bottom: 20px;">
@@ -206,32 +267,20 @@
     </div>
 {% endblock %}
 
-<div class="text-center mb-3">
-
-<a href="#" class="forgot">
-<i class="bi bi-question-circle"></i> ¿Olvidaste tu contraseña?
-</a>
-
-</div>
-
-</form>
-
-<hr class="pet-hr">
-
-<div class="text-center">
-
-<span>¿Nuevo en Hairy Love?</span>
-<br><br>
-
-<a href="{% url 'registro' %}" class="register-link">
-
-<i class="bi bi-person-plus-fill me-2"></i>Regístrate aquí
-
-</a>
-
-</div>
-
-</div>
-
-</body>
-</html>
+{% block extra_js %}
+    <script>
+        function togglePassword(fieldId, icon) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+{% endblock %}

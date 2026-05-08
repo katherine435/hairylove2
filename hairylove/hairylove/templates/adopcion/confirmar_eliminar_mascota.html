@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Confirmar Eliminación - {{ mascota.Nombre_Mascota }} - Hairy Love{% endblock %}
+
+{% block content %}
+<style>
+    .eliminar-container {
+        max-width: 600px;
+        margin: 100px auto 40px;
+        padding: 0 20px;
+    }
+    
+    .eliminar-card {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        text-align: center;
+        animation: fadeInUp 0.8s ease;
+    }
+    
+    .eliminar-icono {
+        font-size: 4em;
+        margin-bottom: 20px;
+    }
+    
+    .eliminar-titulo {
+        font-size: 1.8em;
+        color: #333;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    .eliminar-mensaje {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.6;
+        font-size: 1.05em;
+    }
+    
+    .mascota-info {
+        background: #f9f9f9;
+        border-left: 4px solid #FF6B9D;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        text-align: left;
+    }
+    
+    .mascota-info-item {
+        margin-bottom: 10px;
+    }
+    
+    .mascota-info-label {
+        color: #999;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .mascota-info-valor {
+        color: #333;
+        font-weight: 600;
+        font-size: 1.1em;
+    }
+    
+    .botones-confirmacion {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+    
+    .btn-cancelar, .btn-eliminar {
+        padding: 15px 40px;
+        border: none;
+        border-radius: 50px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-cancelar {
+        background: #999;
+        color: white;
+    }
+    
+    .btn-cancelar:hover {
+        background: #777;
+        transform: translateY(-2px);
+    }
+    
+    .btn-eliminar {
+        background: #f44336;
+        color: white;
+    }
+    
+    .btn-eliminar:hover {
+        background: #da190b;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+    }
+    
+    .aviso-importante {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 25px;
+        color: #856404;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="eliminar-container">
+    <div class="eliminar-card">
+        <div class="eliminar-icono">⚠️</div>
+        
+        <div class="eliminar-titulo">¿Eliminar esta mascota?</div>
+        
+        <div class="eliminar-mensaje">
+            Esta acción <strong>no se puede deshacer</strong>. Se eliminarán todos los datos y registros asociados.
+        </div>
+        
+        <div class="aviso-importante">
+            <strong>⚠️ Importante:</strong> Si hay solicitudes de adopción pendientes, también serán eliminadas.
+        </div>
+        
+        <div class="mascota-info">
+            <div class="mascota-info-item">
+                <div class="mascota-info-label">Nombre de la Mascota</div>
+                <div class="mascota-info-valor">{{ mascota.Nombre_Mascota }}</div>
+            </div>
+            <div class="mascota-info-item">
+                <div class="mascota-info-label">Especie</div>
+                <div class="mascota-info-valor">{{ mascota.Especie }}</div>
+            </div>
+            <div class="mascota-info-item">
+                <div class="mascota-info-label">Raza</div>
+                <div class="mascota-info-valor">{{ mascota.Raza }}</div>
+            </div>
+            <div class="mascota-info-item">
+                <div class="mascota-info-label">Género</div>
+                <div class="mascota-info-valor">{{ mascota.Genero }}</div>
+            </div>
+        </div>
+        
+        <form method="POST" style="display: inline;">
+            {% csrf_token %}
+            <div class="botones-confirmacion">
+                <a href="{% url 'detalles_mascota' mascota.idMascota %}" class="btn-cancelar">
+                    ← Cancelar
+                </a>
+                <button type="submit" class="btn-eliminar">
+                    🗑️ Sí, eliminar mascota
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

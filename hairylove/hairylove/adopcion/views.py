@@ -1,4 +1,8 @@
 import re
+from urllib import request
+from urllib.parse import urljoin
+from urllib.error import URLError, HTTPError
+from html import unescape
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
@@ -14,6 +18,7 @@ from datetime import datetime
 from .models import Mascota, Adopcion, Calificacion, ChatMessage
 from .serializers import MascotaSerializer, AdopcionSerializer
 from .forms import MascotaAdopcionForm, AdopcionForm, CalificacionForm, ChatMessageForm, CargaMasivaForm
+from .razas import RAZAS_POR_ESPECIE, ESPECIES
 from usuarios.models import Usuario, Criador
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -25,7 +30,10 @@ from django.contrib.staticfiles.finders import find
 from datetime import datetime, date, timedelta
 from openpyxl.utils.datetime import from_excel
 from io import BytesIO
-from django.db.models import Avg, Count
+from django.conf import settings
+import os
+import uuid
+from django.core.files.base import ContentFile
 
 
 def parse_excel_date(value, workbook=None):
@@ -63,6 +71,152 @@ def parse_excel_date(value, workbook=None):
         except Exception:
             pass
     raise ValueError(f'No se pudo parsear la fecha: {value}')
+
+def parse_boolean(value):
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    text = str(value).strip().lower()
+    return text in ['si', 'sí', 'yes', 'true', '1', 'verdadero']
+
+
+
+def parse_boolean(value):
+    """Convierte un valor a booleano (Si/No, Yes/No, True/False, 1/0)"""
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    text = str(value).strip().lower()
+    return text in ['si', 'sí', 'yes', 'true', '1', 'verdadero']
+
+
+def extract_image_url_from_html(page_url, html_text):
+    html_text = html_text.replace('\n', ' ')
+    patterns = [
+        r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+name=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+name=["\']twitter:image["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+property=["\']twitter:image["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<img[^>]+data-src=["\']([^"\']+)["\']',
+        r'<img[^>]+src=["\']([^"\']+)["\']',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, html_text, flags=re.I)
+        if match:
+            url = unescape(match.group(1).strip())
+            if url:
+                return urljoin(page_url, url)
+    return None
+
+
+def download_image_from_url(image_url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    req = request.Request(image_url, headers=headers)
+    response = request.urlopen(req, timeout=15)
+    content = response.read()
+    content_type = response.getheader('Content-Type', '') or ''
+
+    if content_type.lower().startswith('image/'):
+        return content, content_type
+
+    html_text = content.decode('utf-8', errors='ignore')
+    extracted = extract_image_url_from_html(image_url, html_text)
+    if extracted:
+        req2 = request.Request(extracted, headers={**headers, 'Referer': image_url})
+        response2 = request.urlopen(req2, timeout=15)
+        content2 = response2.read()
+        content_type2 = response2.getheader('Content-Type', '') or ''
+        if content_type2.lower().startswith('image/'):
+            return content2, content_type2
+    raise ValueError('No se encontró una imagen en la URL proporcionada')
+
+
+def validate_and_map_estado_salud(valor):
+    """
+    Valida y mapea el valor de Estado_Salud a uno de los valores permitidos.
+    Si no es válido, retorna el valor por defecto 'Buena'.
+    """
+    if not valor:
+        return 'Buena'
+    
+    texto = str(valor).strip().lower()
+    
+    # Mapeo de posibles valores en el Excel
+    mapeo = {
+        'excelente': 'Excelente',
+        'buena': 'Buena',
+        'regular': 'Regular',
+        'muy buena': 'Excelente',
+        'muy buena salud': 'Excelente',
+        'buena salud': 'Buena',
+        'regular salud': 'Regular',
+        'mala': 'Regular',
+        'pobre': 'Regular',
+        'ok': 'Buena',
+        'bien': 'Buena',
+        'malo': 'Regular',
+    }
+    
+    # Buscar coincidencia exacta o parcial
+    for clave, val_mapeo in mapeo.items():
+        if clave in texto or texto in clave:
+            return val_mapeo
+    
+    # Si no encuentra coincidencia, retorna el valor por defecto
+    return 'Buena'
+
+
+def validate_and_map_genero(valor):
+    """Valida y mapea el género a uno de los valores permitidos."""
+    if not valor:
+        return 'Macho'
+    
+    texto = str(valor).strip().lower()
+    
+    if texto in ['macho', 'm', 'male', 'masculino']:
+        return 'Macho'
+    elif texto in ['hembra', 'h', 'female', 'femenino', 'f']:
+        return 'Hembra'
+    
+    return 'Macho'
+
+
+def validate_and_map_tamaño(valor):
+    """Valida y mapea el tamaño a uno de los valores permitidos."""
+    if not valor:
+        return 'Mediano'
+    
+    texto = str(valor).strip().lower()
+    
+    if 'pequeño' in texto or 'pequeño' in texto or 'small' in texto or 'chico' in texto:
+        return 'Pequeño'
+    elif 'grande' in texto or 'big' in texto or 'l' == texto or 'lg' in texto:
+        return 'Grande'
+    else:
+        return 'Mediano'
+
+
+def validate_and_map_origen(valor):
+    """Valida y mapea el origen a uno de los valores permitidos."""
+    if not valor:
+        return 'Criador'
+    
+    texto = str(valor).strip().lower()
+    opciones = ['criador', 'refugio', 'rescate', 'abandono']
+    
+    for opcion in opciones:
+        if opcion in texto or texto in opcion:
+            return opcion.capitalize()
+    
+    return 'Criador'
+
+
 from openpyxl import Workbook
 import random
 
@@ -211,16 +365,23 @@ def detalles_mascota(request, mascota_id):
     
     # Verificar si el usuario autenticado ya tiene una solicitud pendiente
     solicitud_existente = None
+    es_criador_propietario = False
+    
     if request.user.is_authenticated:
-        solicitud_existente = Adopcion.objects.filter(
-            idMascota=mascota,
-            idPropietario=request.user.idUsuario,
-            Estado__in=['Pendiente', 'Confirmada']
-        ).first()
+        # Verificar si es el criador propietario
+        if hasattr(request.user, 'idUsuario') and request.user.idUsuario == mascota.idCriador:
+            es_criador_propietario = True
+        else:
+            solicitud_existente = Adopcion.objects.filter(
+                idMascota=mascota,
+                idPropietario=request.user.idUsuario,
+                Estado__in=['Pendiente', 'Aprobada']
+            ).first()
     
     context = {
         'mascota': mascota,
-        'solicitud_existente': solicitud_existente
+        'solicitud_existente': solicitud_existente,
+        'es_criador_propietario': es_criador_propietario
     }
     return render(request, 'adopcion/detalles_mascota.html', context)
 
@@ -332,8 +493,8 @@ def chat_mensajes(request, usuario_id):
         messages.error(request, 'Usuario no encontrado')
         return redirect('index')
 
-    # Verificar que uno sea propietario y otro criador, o admin
-    if usuario_actual.tipo not in ['Propietario', 'Criador', 'Administrador'] or usuario_destino.tipo not in ['Propietario', 'Criador', 'Administrador']:
+    # Verificar que uno sea propietario y otro criador
+    if usuario_actual.tipo not in ['Propietario', 'Criador'] or usuario_destino.tipo not in ['Propietario', 'Criador']:
         messages.error(request, 'Chat no disponible entre estos usuarios')
         return redirect('index')
 
@@ -394,7 +555,7 @@ def chat_mensajes_api(request, usuario_id):
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
 
     usuario_actual = request.user
-    if usuario_actual.tipo not in ['Propietario', 'Criador', 'Administrador'] or usuario_destino.tipo not in ['Propietario', 'Criador', 'Administrador']:
+    if usuario_actual.tipo not in ['Propietario', 'Criador'] or usuario_destino.tipo not in ['Propietario', 'Criador']:
         return JsonResponse({'error': 'Chat no disponible entre estos usuarios'}, status=403)
 
     last_id = request.GET.get('last_id')
@@ -504,8 +665,8 @@ def descargar_excel_adopciones(request):
 @login_required
 def crear_adoptar_mascotas_random(request):
     """Crea 100 mascotas aleatorias para llenar la app."""
-    if request.user.tipo != 'Administrador':
-        messages.error(request, 'Solo administradores pueden generar mascotas de prueba')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Debes estar autenticado para usar esta función')
         return redirect('index')
 
     nombres_base = ['Luna', 'Nala', 'Max', 'Simba', 'Milo', 'Bella', 'Chispa', 'Rocky', 'Lola', 'Thor',
@@ -1198,67 +1359,374 @@ def carga_masiva_mascotas(request):
             if not archivo.name.endswith('.xlsx'):
                 messages.error(request, "Solo se permiten archivos .xlsx")
                 return redirect('carga_masiva_mascotas')
-            
-            try:
+
+            try:    
                 wb = openpyxl.load_workbook(archivo)
                 ws = wb.active
                 
-                errores = []
-                mascotas_creadas = 0
+                # Leer encabezados de la primera fila
+                headers_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
+                headers = [str(h).strip().lower() if h else '' for h in headers_row]
                 
-                for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-                    try:
-                        # Extraer valores de las columnas (ajusta según el orden en Excel)
-                        nombre, fecha_nac_str, raza, genero, peso, especie, color, tamaño, historial, tipo_alim, enfermedades, vivienda, vacunas, compatibilidad, desc_fisica = row[:15]
-                        
-                        # Validaciones básicas
-                        if not nombre or not raza or not genero:
-                            errores.append(f"Fila {row_num}: Nombre, raza y género son obligatorios")
-                            continue
-                        
-                        # Convertir fecha
-                        fecha_nac = None
-                        if fecha_nac_str is not None and str(fecha_nac_str).strip() != '':
-                            try:
-                                fecha_nac = parse_excel_date(fecha_nac_str, wb)
-                            except Exception:
-                                errores.append(
-                                    f"Fila {row_num}: Fecha de nacimiento inválida (formatos válidos: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY, MM-DD-YYYY)"
-                                )
-                                continue
-                        
-                        # Crear mascota
-                        Mascota.objects.create(
-                            Nombre_Mascota=nombre,
-                            Fecha_Nacimiento=fecha_nac,
-                            Raza=raza,
-                            Genero=genero,
-                            Peso=float(peso) if peso else 0,
-                            Especie=especie or 'Perro',
-                            Color=color or '',
-                            Tamaño=tamaño or 'Mediano',
-                            Historial_Mascota=historial or '',
-                            Tipo_Alimentación=tipo_alim or '',
-                            Enfermedades=enfermedades or '',
-                            Vivienda=vivienda or '',
-                            Vacunas=vacunas or '',
-                            Compatibilidad_Mascota=compatibilidad or '',
-                            Descripción_Física=desc_fisica or '',
-                            idCriador=usuario.idUsuario,
-                            disponible=True
-                        )
-                        mascotas_creadas += 1
-                    except Exception as e:
-                        errores.append(f"Fila {row_num}: Error - {str(e)}")
+                # Crear diccionario de índices de columnas por nombre
+                column_indices = {}
+                for i, header in enumerate(headers):
+                    if header:
+                        # Mapear diferentes variaciones de nombres de columna
+                        if 'nombre' in header and 'mascota' in header:
+                            column_indices['nombre'] = i
+                        elif 'fecha' in header and ('nac' in header or 'nacimiento' in header):
+                            column_indices['fecha_nac'] = i
+                        elif header == 'raza':
+                            column_indices['raza'] = i
+                        elif header == 'genero' or header == 'género':
+                            column_indices['genero'] = i
+                        elif header == 'peso':
+                            column_indices['peso'] = i
+                        elif header == 'especie':
+                            column_indices['especie'] = i
+                        elif header == 'color':
+                            column_indices['color'] = i
+                        elif 'tamaño' in header or 'tamano' in header or header == 'size':
+                            column_indices['tamaño'] = i
+                        elif 'historial' in header:
+                            column_indices['historial'] = i
+                        elif 'alimentación' in header or 'alimentacion' in header or 'tipo_alim' in header:
+                            column_indices['tipo_alim'] = i
+                        elif 'enfermedad' in header:
+                            column_indices['enfermedades'] = i
+                        elif header == 'vivienda':
+                            column_indices['vivienda'] = i
+                        elif header == 'vacunas':
+                            column_indices['vacunas'] = i
+                        elif 'compatibilidad' in header:
+                            column_indices['compatibilidad'] = i
+                        elif 'descripción' in header or 'descripcion' in header or 'desc_fisica' in header:
+                            column_indices['desc_fisica'] = i
+                        elif 'estado_salud' in header or 'estado salud' in header:
+                            column_indices['estado_salud'] = i
+                        elif header == 'origen':
+                            column_indices['origen'] = i
+                        elif 'esterilizado' in header:
+                            column_indices['esterilizado'] = i
+                        elif 'socializado' in header:
+                            column_indices['socializado'] = i
+                        elif 'url' in header or 'imagen' in header or 'image' in header:
+                            column_indices['image_url'] = i
                 
-                if errores:
-                    messages.warning(request, f"Carga completada con {len(errores)} errores: {', '.join(errores[:5])}")
-                messages.success(request, f"{mascotas_creadas} mascotas creadas exitosamente.")
-                return redirect('carga_masiva_mascotas')
+                print(f"Índices de columnas detectados: {column_indices}")
+
             except Exception as e:
-                messages.error(request, f"Error al procesar el archivo: {str(e)}")
+                messages.error(request, f"Error al cargar el archivo Excel: {str(e)}")
                 return redirect('carga_masiva_mascotas')
-    else:
+
+            errores = []
+            mascotas_creadas = 0
+
+            for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+                if row_num <= 5:  # Debug first 5 rows
+                    print(f"Row {row_num}: {row}")
+
+                if not any(cell is not None and str(cell).strip() != '' for cell in row):
+                    continue
+
+                # Función auxiliar para obtener valor seguro de la fila
+                def get_cell(col_name, default=None):
+                    idx = column_indices.get(col_name)
+                    if idx is not None and idx < len(row):
+                        val = row[idx]
+                        return val if val is not None else default
+                    return default
+
+                nombre = get_cell('nombre')
+                fecha_nac_str = get_cell('fecha_nac')
+                raza = get_cell('raza')
+                genero = get_cell('genero')
+                peso = get_cell('peso')
+                especie = get_cell('especie')
+                color = get_cell('color')
+                tamaño = get_cell('tamaño')
+                historial = get_cell('historial')
+                tipo_alim = get_cell('tipo_alim')
+                enfermedades = get_cell('enfermedades')
+                vivienda = get_cell('vivienda')
+                vacunas = get_cell('vacunas')
+                compatibilidad = get_cell('compatibilidad')
+                desc_fisica = get_cell('desc_fisica')
+                estado_salud = get_cell('estado_salud')
+                origen = get_cell('origen')
+                esterilizado_val = get_cell('esterilizado')
+                socializado_val = get_cell('socializado')
+                image_url = get_cell('image_url')
+
+                esterilizado = parse_boolean(esterilizado_val)
+                socializado = parse_boolean(socializado_val)
+
+                if not nombre or not raza or not genero:
+                    errores.append(f"Fila {row_num}: Nombre, raza y género son obligatorios")
+                    continue
+
+                # Validar y mapear campos con choices
+                genero = validate_and_map_genero(genero)
+                tamaño = validate_and_map_tamaño(tamaño)
+                estado_salud = validate_and_map_estado_salud(estado_salud)
+                origen = validate_and_map_origen(origen)
+
+                foto = None
+                advertencia_imagen = None
+                if image_url and str(image_url).strip():
+                    try:
+                        url = str(image_url).strip()
+                        content, content_type = download_image_from_url(url)
+
+                        ext = ''
+                        if content_type and content_type.startswith('image/'):
+                            ext = content_type.split('/')[-1].split(';')[0]
+                        if not ext or '/' in ext or ext in ('html', 'htm', 'php', 'asp', 'aspx', 'jsp'):
+                            ext = url.split('.')[-1].split('?')[0][:5].lower()
+                        if not ext or '/' in ext or ext in ('html', 'htm', 'php', 'asp', 'aspx', 'jsp'):
+                            ext = 'jpg'
+
+                        filename = f"{uuid.uuid4()}.{ext}"
+                        foto = ContentFile(content, name=filename)
+                        print(f"✓ Imagen descargada para {nombre}: {filename}")
+                    except HTTPError as e:
+                        print(f"✗ HTTP Error {e.code} descargando imagen de {nombre}: {url}")
+                        advertencia_imagen = f"No se pudo descargar la imagen (HTTP {e.code})"
+                    except URLError as e:
+                        print(f"✗ URL Error descargando imagen de {nombre}: {url} - {e.reason}")
+                        advertencia_imagen = f"Error de conexión al descargar la imagen"
+                    except Exception as e:
+                        print(f"✗ Error desconocido para {nombre}: {str(e)}")
+                        advertencia_imagen = f"Error con imagen - {str(e)}"
+
+                fecha_nac = None
+                if fecha_nac_str is not None and str(fecha_nac_str).strip() != '':
+                    try:
+                        fecha_nac = parse_excel_date(fecha_nac_str, wb)
+                    except Exception:
+                        errores.append(
+                            f"Fila {row_num}: Fecha de nacimiento inválida (formatos válidos: YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, MM/DD/YYYY, MM-DD-YYYY)"
+                        )
+                        continue
+
+                # Truncar campos de texto largos para evitar errores de longitud
+                historial = (str(historial) if historial else '')[:500]
+                tipo_alim = (str(tipo_alim) if tipo_alim else '')[:100]
+                enfermedades = (str(enfermedades) if enfermedades else '')[:500]
+                vivienda = (str(vivienda) if vivienda else '')[:100]
+                vacunas = (str(vacunas) if vacunas else '')[:500]
+                compatibilidad = (str(compatibilidad) if compatibilidad else '')[:500]
+                desc_fisica = (str(desc_fisica) if desc_fisica else '')[:500]
+
+                mascota_data = {
+                    'Nombre_Mascota': nombre,
+                    'Fecha_Nacimiento': fecha_nac,
+                    'Raza': raza,
+                    'Genero': genero,
+                    'Peso': float(peso) if peso else 0,
+                    'Especie': especie or 'Perro',
+                    'Color': color or '',
+                    'Tamaño': tamaño,
+                    'Historial_Mascota': historial,
+                    'Tipo_Alimentación': tipo_alim,
+                    'Enfermedades': enfermedades,
+                    'Vivienda': vivienda,
+                    'Vacunas': vacunas,
+                    'Compatibilidad_Mascota': compatibilidad,
+                    'Descripción_Física': desc_fisica,
+                    'Estado_Salud': estado_salud,
+                    'Origen': origen,
+                    'Esterilizado': esterilizado or False,
+                    'Socializado': socializado or True,
+                    'idCriador': usuario.idUsuario,
+                    'disponible': True
+                }
+                
+                if foto:
+                    mascota_data['foto_mascota'] = foto
+                
+                try:
+                    Mascota.objects.create(**mascota_data)
+                    mascotas_creadas += 1
+                    # Si hubo advertencia con la imagen, agregarla a la lista pero no como error
+                    if advertencia_imagen:
+                        print(f"⚠️ Fila {row_num}: {nombre} creada, pero {advertencia_imagen}")
+                except Exception as e:
+                    errores.append(f"Fila {row_num}: No se pudo crear la mascota - {str(e)}")
+
+            # Mostrar resultados después de procesar todas las filas
+            if mascotas_creadas > 0:
+                messages.success(request, f"✅ {mascotas_creadas} mascotas creadas correctamente.")
+            if errores:
+                mensajes_error = '; '.join(errores[:5])
+                if len(errores) > 5:
+                    mensajes_error += f"; y {len(errores) - 5} errores más"
+                messages.warning(request, f"⚠️ {len(errores)} errores encontrados: {mensajes_error}")
+            if mascotas_creadas == 0 and not errores:
+                messages.info(request, "No se encontraron filas válidas para procesar.")
+            return redirect('carga_masiva_mascotas')
+        else:
+            messages.error(request, "El formulario no es válido")
+    
+    # Si es GET, mostrar el formulario
+    if request.method == 'GET':
         form = CargaMasivaForm()
     
     return render(request, 'adopcion/carga_masiva.html', {'form': form})
+
+# ==================== APIS PARA REGISTRO DINÁMICO DE MASCOTAS ====================
+
+def api_especies(request):
+    """API que retorna todas las especies disponibles (Perro, Gato)"""
+    return JsonResponse({
+        'especies': ESPECIES
+    })
+
+
+def api_razas_por_especie(request):
+    """API que retorna las razas según la especie seleccionada"""
+    especie = request.GET.get('especie', '')
+    
+    if especie in RAZAS_POR_ESPECIE:
+        razas = RAZAS_POR_ESPECIE[especie]
+    else:
+        razas = []
+    
+    return JsonResponse({
+        'razas': razas
+    })
+
+
+def api_generos(request):
+    """API que retorna los géneros disponibles"""
+    generos = [
+        {'value': 'Macho', 'label': 'Macho'},
+        {'value': 'Hembra', 'label': 'Hembra'}
+    ]
+    return JsonResponse({
+        'generos': generos
+    })
+
+
+def api_tamanos(request):
+    """API que retorna los tamaños disponibles"""
+    tamanos = [
+        {'value': 'Pequeño', 'label': 'Pequeño'},
+        {'value': 'Mediano', 'label': 'Mediano'},
+        {'value': 'Grande', 'label': 'Grande'},
+    ]
+    return JsonResponse({
+        'tamanos': tamanos
+    })
+
+
+# ==================== VISTAS PARA CRIADORES: EDITAR/ELIMINAR/SOLICITUDES ====================
+
+@login_required
+def editar_mascota(request, mascota_id):
+    """Vista para que criadores editen sus mascotas"""
+    try:
+        mascota = Mascota.objects.get(idMascota=mascota_id)
+    except Mascota.DoesNotExist:
+        messages.error(request, "Mascota no encontrada")
+        return redirect('mis_mascotas_adopcion')
+    
+    # Verificar que sea el propietario
+    if mascota.idCriador != request.user.idUsuario:
+        messages.error(request, "No tienes permiso para editar esta mascota")
+        return redirect('detalles_mascota', mascota_id=mascota_id)
+    
+    if request.method == 'POST':
+        form = MascotaAdopcionForm(request.POST, request.FILES, instance=mascota)
+        print(f"Formulario válido: {form.is_valid()}")
+        print(f"Datos POST: {request.POST}")
+        print(f"Archivos: {request.FILES}")
+        
+        if form.is_valid():
+            try:
+                mascota = form.save(commit=False)
+                mascota.fecha_actualizacion = timezone.now()
+                mascota.save()
+                print(f"Mascota guardada exitosamente: {mascota.Nombre_Mascota}")
+                messages.success(request, f"Mascota {mascota.Nombre_Mascota} actualizada correctamente.")
+                return redirect('detalles_mascota', mascota_id=mascota_id)
+            except Exception as e:
+                print(f"Error al guardar: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                messages.error(request, f"Error al guardar los cambios: {str(e)}")
+        else:
+            print(f"Errores del formulario: {form.errors}")
+            # Mostrar errores específicos del formulario
+            error_messages = []
+            for field, errors in form.errors.items():
+                for error in errors:
+                    error_messages.append(f"{field}: {error}")
+            messages.error(request, f"Errores en el formulario: {'; '.join(error_messages)}")
+    else:
+        form = MascotaAdopcionForm(instance=mascota)
+    
+    context = {'form': form, 'mascota': mascota, 'es_edicion': True}
+    return render(request, 'adopcion/editar_mascota.html', context)
+
+
+@login_required
+def eliminar_mascota(request, mascota_id):
+    """Vista para eliminar una mascota"""
+    try:
+        mascota = Mascota.objects.get(idMascota=mascota_id)
+    except Mascota.DoesNotExist:
+        messages.error(request, "Mascota no encontrada")
+        return redirect('mis_mascotas_adopcion')
+    
+    # Verificar que sea el propietario
+    if mascota.idCriador != request.user.idUsuario:
+        messages.error(request, "No tienes permiso para eliminar esta mascota")
+        return redirect('detalles_mascota', mascota_id=mascota_id)
+    
+    if request.method == 'POST':
+        nombre_mascota = mascota.Nombre_Mascota
+        mascota.delete()
+        messages.success(request, f"{nombre_mascota} ha sido eliminada.")
+        return redirect('mis_mascotas_adopcion')
+    
+    # Mostrar confirmación
+    context = {'mascota': mascota}
+    return render(request, 'adopcion/confirmar_eliminar_mascota.html', context)
+
+
+@login_required
+def ver_solicitudes_mascota(request, mascota_id):
+    """Vista para que criadores vean solicitudes de adopción de sus mascotas"""
+    try:
+        mascota = Mascota.objects.get(idMascota=mascota_id)
+    except Mascota.DoesNotExist:
+        messages.error(request, "Mascota no encontrada")
+        return redirect('mis_mascotas_adopcion')
+    
+    # Verificar que sea el propietario
+    if mascota.idCriador != request.user.idUsuario:
+        messages.error(request, "No tienes permiso para ver estas solicitudes")
+        return redirect('detalles_mascota', mascota_id=mascota_id)
+    
+    # Obtener todas las solicitudes de adopción para esta mascota
+    solicitudes = Adopcion.objects.filter(
+        idMascota=mascota
+    ).order_by('-Fecha_Solicitud')
+    
+    # Obtener datos de propietarios
+    solicitudes_con_usuario = []
+    for solicitud in solicitudes:
+        try:
+            usuario = Usuario.objects.get(idUsuario=solicitud.idPropietario)
+            solicitud.usuario_datos = usuario
+        except Usuario.DoesNotExist:
+            solicitud.usuario_datos = None
+        solicitudes_con_usuario.append(solicitud)
+    
+    context = {
+        'mascota': mascota,
+        'solicitudes': solicitudes_con_usuario
+    }
+    return render(request, 'adopcion/solicitudes_mascota.html', context)

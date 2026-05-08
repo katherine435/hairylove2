@@ -7,52 +7,218 @@
 <style>
     /* Estilos adicionales para homepage */
     .hero {
-        background: linear-gradient(135deg, rgba(232, 62, 140, 0.1), rgba(168, 65, 159, 0.05)) !important;
-        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(232, 62, 140, 0.08), rgba(168, 65, 159, 0.04));
+        border-radius: 30px;
         position: relative;
         overflow: hidden;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        box-shadow: 0 25px 80px rgba(78, 7, 73, 0.08);
     }
     
     .hero::before {
         content: '';
         position: absolute;
-        top: -50%;
-        right: -10%;
+        top: -40%;
+        right: -15%;
         width: 400px;
         height: 400px;
-        background: radial-gradient(circle, rgba(255, 105, 180, 0.1), transparent);
+        background: radial-gradient(circle, rgba(232, 62, 140, 0.12), transparent);
         border-radius: 50%;
-        animation: float 6s ease-in-out infinite;
+        animation: float 8s ease-in-out infinite;
     }
     
     .hero::after {
         content: '';
         position: absolute;
-        bottom: -50%;
-        left: -10%;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, rgba(199, 21, 133, 0.1), transparent);
+        bottom: -35%;
+        left: -20%;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, rgba(199, 21, 133, 0.12), transparent);
         border-radius: 50%;
-        animation: float 8s ease-in-out infinite;
+        animation: float 9s ease-in-out infinite;
     }
-    
-    .hero h1 {
+
+    .hero-grid {
         position: relative;
         z-index: 1;
-        animation: slideInFromTop 0.8s ease;
+        display: grid;
+        grid-template-columns: minmax(260px, 1.2fr) 1fr;
+        gap: 2rem;
+        align-items: center;
     }
-    
-    .hero p {
-        position: relative;
-        z-index: 1;
-        animation: slideInFromTop 0.8s ease 0.2s both;
+
+    .hero-copy {
+        padding: 1rem 0;
     }
-    
+
+    .hero-pill {
+        display: inline-block;
+        padding: 0.6rem 1rem;
+        border-radius: 999px;
+        background: rgba(232, 62, 140, 0.14);
+        color: #d91f7f;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-size: 0.83rem;
+    }
+
+    .hero-copy h1 {
+        font-size: clamp(2.9rem, 4.4vw, 4.8rem);
+        line-height: 1.02;
+        margin: 0 0 1rem;
+        max-width: 680px;
+        color: #2b0d35;
+    }
+
+    .hero-copy p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #4f2e5e;
+        max-width: 620px;
+        margin-bottom: 1.8rem;
+    }
+
     .hero-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .hero-buttons .btn-primary,
+    .hero-buttons .btn-outline {
+        min-width: 170px;
+    }
+
+    .hero-carousel {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .carousel-wrapper {
         position: relative;
-        z-index: 1;
-        animation: slideInFromTop 0.8s ease 0.4s both;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 30px;
+        min-height: 520px;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.2);
+    }
+
+    .carousel-track {
+        display: flex;
+        transition: transform 0.75s ease;
+        will-change: transform;
+    }
+
+    .carousel-slide {
+        min-width: 100%;
+        height: 520px;
+        position: relative;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .carousel-slide::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.5));
+    }
+
+    .slide-content {
+        position: relative;
+        z-index: 2;
+        text-align: left;
+        color: white;
+        max-width: 620px;
+        padding: 0 32px;
+    }
+
+    .slide-content h2 {
+        font-size: clamp(2.4rem, 4vw, 3.8rem);
+        margin-bottom: 1rem;
+        text-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+
+    .slide-content p {
+        font-size: 1rem;
+        line-height: 1.75;
+        color: rgba(255,255,255,0.94);
+        text-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        margin-bottom: 0;
+    }
+
+    .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 55px;
+        height: 55px;
+        background: rgba(255,255,255,0.9);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        color: #7a2dbb;
+        cursor: pointer;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+        transition: transform 0.25s ease, background 0.25s ease;
+        z-index: 10;
+    }
+
+    .carousel-arrow:hover {
+        transform: translateY(-50%) scale(1.05);
+        background: rgba(255,255,255,1);
+    }
+
+    .carousel-arrow.prev {
+        left: 18px;
+    }
+
+    .carousel-arrow.next {
+        right: 18px;
+    }
+
+    .carousel-indicators {
+        position: absolute;
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 0.75rem;
+        z-index: 10;
+    }
+
+    .indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.65);
+        cursor: pointer;
+        transition: all 0.25s ease;
+    }
+
+    .indicator.active {
+        width: 24px;
+        background: #e83e8c;
+        border-radius: 999px;
+    }
+
+    .adoption-track {
+        display: flex;
+        gap: 1rem;
+        transition: transform 0.75s ease;
+        padding-bottom: 10px;
     }
     
     /* Estadísticas animadas */
@@ -158,6 +324,20 @@
         display: none;
     }
     
+    @media (max-width: 900px) {
+        .hero-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .carousel-wrapper {
+            min-height: 420px;
+        }
+
+        .carousel-slide {
+            height: 420px;
+        }
+    }
+
     @media (max-width: 768px) {
         .process-steps::before {
             display: none;
@@ -188,7 +368,62 @@
         margin: 0 auto 1rem;
         animation: bounce-soft 0.6s ease;
     }
-    
+
+    .adoption-nav {
+        width: 100%;
+        overflow: hidden;
+        margin: 2rem 0 0;
+        padding: 0 10px;
+    }
+
+    .carousel-track {
+        display: flex;
+        gap: 1rem;
+        transition: transform 0.75s ease;
+        padding-bottom: 10px;
+    }
+
+    .adoption-card {
+        min-width: 220px;
+        height: 140px;
+        border-radius: 22px;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid rgba(255,255,255,0.85);
+        box-shadow: 0 18px 35px rgba(53, 10, 86, 0.16);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .adoption-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 40px rgba(53, 10, 86, 0.22);
+    }
+
+    .adoption-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .adoption-card span {
+        position: absolute;
+        left: 16px;
+        bottom: 14px;
+        color: white;
+        font-weight: 700;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        z-index: 1;
+    }
+
+    .adoption-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.35));
+    }
+
     /* Galería de mascotas con efecto 3D */
     .mascota-card {
         position: relative;
@@ -247,24 +482,63 @@
 {% endblock %}
 
 {% block content %}
-    <!-- HERO SECTION CON ANIMACIÓN -->
+    <!-- HERO SECTION CON CARRUSEL -->
     <div class="hero">
-        <h1><i class="fas fa-star" style="color: #ffc107; margin-right: 0.5rem;"></i> Dale un hogar lleno de amor y alegría <i class="fas fa-star" style="color: #ffc107; margin-left: 0.5rem;"></i></h1>
-        <p>
-            💕 Conectamos mascotas con familias responsables. Encuentra a tu compañero perfecto y cambia dos vidas para siempre.
-        </p>
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <span class="hero-pill">Adopción con corazón</span>
+                <h1>Haz espacio para el amor y encuentra a tu compañero ideal</h1>
+                <p>Explora mascotas listas para llegar a tu hogar con seguridad, acompañamiento y ternura en cada paso.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'mascotas_adopcion' %}" class="btn-primary">
+                        <i class="fas fa-paw"></i> Buscar mascotas
+                    </a>
+                    <a href="{% url 'registro' %}" class="btn-outline">
+                        <i class="fas fa-user-plus"></i> Únete como criador
+                    </a>
+                </div>
+            </div>
 
-        <div class="hero-buttons">
-            {% if user.is_authenticated and user.tipo == 'Criador' %}
-                <a href="{% url 'registrar_mascota_adopcion' %}" class="btn-pink">
-                    <i class="fas fa-paw"></i> Registrar mascota
-                </a>
-            {% else %}
-                <a href="{% url 'mascotas_adopcion' %}" class="btn-pink">
-                    <i class="fas fa-paw"></i> Quiero adoptar
-                </a>
-            {% endif %}
+            <div class="hero-carousel">
+                <div class="carousel-wrapper">
+                <div class="carousel-track" id="carouselTrack">
+                    <div class="carousel-slide" style="background-image: url('{% static 'images/perros.jpg' %}');">
+                        <div class="slide-content">
+                            <h2>Adopta un amigo fiel hoy</h2>
+                            <p>Explora mascotas listas para llenar tu hogar con amor, compañía y nuevas aventuras.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide" style="background-image: url('{% static 'images/imagenprincipal.png' %}');">
+                        <div class="slide-content">
+                            <h2>Encuentra tu compañero ideal</h2>
+                            <p>Descubre perros y gatos buscando un hogar responsable y lleno de cariño.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide" style="background-image: url('{% static 'images/PyG.jpg' %}');">
+                        <div class="slide-content">
+                            <h2>Conecta con tu mascota perfecta</h2>
+                            <p>Revisa perfiles felices y comparte una nueva historia de adopción.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-slide" style="background-image: url('{% static 'images/Hairylove.png' %}');">
+                        <div class="slide-content">
+                            <h2>Haz feliz a una mascota</h2>
+                            <p>Únete a Hairy Love y cambia dos vidas para siempre: la tuya y la de una mascota.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="carousel-arrow prev" type="button" aria-label="Anterior">&#10094;</button>
+                <button class="carousel-arrow next" type="button" aria-label="Siguiente">&#10095;</button>
+                <div class="carousel-indicators" id="carouselIndicators">
+                    <span class="indicator active" data-slide="0"></span>
+                    <span class="indicator" data-slide="1"></span>
+                    <span class="indicator" data-slide="2"></span>
+                    <span class="indicator" data-slide="3"></span>
+                </div>
+            </div>
         </div>
+    </div>
     </div>
 
     <!-- ESTADÍSTICAS ANIMADAS -->
@@ -279,7 +553,7 @@
         </div>
         <div class="stat-card">
             <div class="stat-number" data-counter="50">0</div>
-            <div class="stat-label">👨‍💼 Administradores</div>
+            <div class="stat-label">👨‍💼 Criadores</div>
         </div>
         <div class="stat-card">
             <div class="stat-number" data-counter="100">0</div>
@@ -496,6 +770,46 @@
                 }
             }, 50);
         });
+
+        const track = document.getElementById('carouselTrack');
+        const indicators = Array.from(document.querySelectorAll('.indicator'));
+        const prevButton = document.querySelector('.carousel-arrow.prev');
+        const nextButton = document.querySelector('.carousel-arrow.next');
+        const slides = Array.from(track.children);
+        let activeIndex = 0;
+        let autoSlide;
+
+        const updateCarousel = (index) => {
+            activeIndex = index;
+            track.style.transform = `translateX(-${index * 100}%)`;
+            indicators.forEach((dot, i) => dot.classList.toggle('active', i === index));
+        };
+
+        const nextSlide = () => updateCarousel((activeIndex + 1) % slides.length);
+        const prevSlide = () => updateCarousel((activeIndex - 1 + slides.length) % slides.length);
+        const resetAuto = () => {
+            clearInterval(autoSlide);
+            autoSlide = setInterval(nextSlide, 6000);
+        };
+
+        prevButton.addEventListener('click', () => {
+            prevSlide();
+            resetAuto();
+        });
+
+        nextButton.addEventListener('click', () => {
+            nextSlide();
+            resetAuto();
+        });
+
+        indicators.forEach(dot => {
+            dot.addEventListener('click', () => {
+                updateCarousel(parseInt(dot.dataset.slide, 10));
+                resetAuto();
+            });
+        });
+
+        resetAuto();
     });
 </script>
 {% endblock %}

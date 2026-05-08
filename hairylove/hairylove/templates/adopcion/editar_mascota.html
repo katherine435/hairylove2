@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Mascota - {{ mascota.Nombre_Mascota }} - Hairy Love{% endblock %}
+
+{% block content %}
+<style>
+    .editar-container {
+        max-width: 900px;
+        margin: 80px auto 40px;
+        padding: 0 20px;
+    }
+
+    .editar-header {
+        text-align: center;
+        margin-bottom: 50px;
+        animation: fadeInDown 0.8s ease;
+    }
+
+    .editar-header h1 {
+        font-size: 2.5em;
+        color: rgb(82, 64, 184);
+        margin-bottom: 15px;
+        font-weight: 800;
+    }
+
+    .editar-header p {
+        font-size: 1.1em;
+        color: #666;
+    }
+
+    .form-section {
+        background: white;
+        border-radius: 15px;
+        padding: 40px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        animation: slideInLeft 0.6s ease;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: 600;
+        color: #333;
+        font-size: 1em;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1em;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #FF6B9D;
+        box-shadow: 0 0 0 3px rgba(255, 107, 157, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-check {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-check input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-right: 10px;
+        cursor: pointer;
+    }
+
+    .form-check label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .section-title {
+        font-size: 1.3em;
+        color: #FF6B9D;
+        margin: 30px 0 20px;
+        font-weight: 700;
+        border-bottom: 2px solid #FF6B9D;
+        padding-bottom: 10px;
+    }
+
+    .botones-edicion {
+        display: flex;
+        gap: 15px;
+        margin-top: 40px;
+        flex-wrap: wrap;
+    }
+
+    .btn-guardar,
+    .btn-cancelar {
+        padding: 15px 50px;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .btn-guardar {
+        background: linear-gradient(135deg, #FF6B9D, #FF8FBC);
+        color: white;
+        box-shadow: 0 4px 15px rgba(255, 107, 157, 0.3);
+    }
+
+    .btn-guardar:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+    }
+
+    .btn-cancelar {
+        background: #999;
+        color: white;
+    }
+
+    .btn-cancelar:hover {
+        background: #777;
+        transform: translateY(-3px);
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, rgba(255, 107, 157, 0.1), rgba(255, 143, 188, 0.1));
+        border-left: 4px solid #FF6B9D;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
+    .info-box p {
+        margin: 0;
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .required-field::after {
+        content: " *";
+        color: #FF6B9D;
+        font-weight: bold;
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border: 1px solid #c3e6cb;
+    }
+
+    .foto-actual {
+        margin-top: 15px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 10px;
+    }
+
+    .foto-actual-img {
+        max-width: 100%;
+        max-height: 250px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+</style>
+
+<div class="editar-container">
+    <div class="editar-header">
+        <h1>✏️ Editar Mascota</h1>
+        <p>Actualiza la información de {{ mascota.Nombre_Mascota }}</p>
+    </div>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="{% if message.tags %}{{ message.tags }}{% endif %}-message">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="info-box">
+        <p><strong>ℹ️ Información:</strong> Los cambios que realices aquí se reflejarán inmediatamente en el perfil de
+            tu mascota.</p>
+    </div>
+
+    <div class="form-section">
+        <form method="POST" enctype="multipart/form-data" id="formularioEdicion">
+            {% csrf_token %}
+
+            <!-- INFORMACIÓN BÁSICA -->
+            <h2 class="section-title">📋 Información Básica</h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.Nombre_Mascota.id_for_label }}" class="required-field">{{
+                        form.Nombre_Mascota.label }}</label>
+                    {{ form.Nombre_Mascota }}
+                    {% if form.Nombre_Mascota.errors %}
+                    <div class="error-message">{{ form.Nombre_Mascota.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.Especie.id_for_label }}" class="required-field">{{ form.Especie.label }}</label>
+                    {{ form.Especie }}
+                    {% if form.Especie.errors %}
+                    <div class="error-message">{{ form.Especie.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.Raza.id_for_label }}" class="required-field">{{ form.Raza.label }}</label>
+                    {{ form.Raza }}
+                    {% if form.Raza.errors %}
+                    <div class="error-message">{{ form.Raza.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.Fecha_Nacimiento.id_for_label }}" class="required-field">{{
+                        form.Fecha_Nacimiento.label }}</label>
+                    {{ form.Fecha_Nacimiento }}
+                    {% if form.Fecha_Nacimiento.errors %}
+                    <div class="error-message">{{ form.Fecha_Nacimiento.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.Genero.id_for_label }}" class="required-field">{{ form.Genero.label }}</label>
+                    {{ form.Genero }}
+                    {% if form.Genero.errors %}
+                    <div class="error-message">{{ form.Genero.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.Tamaño.id_for_label }}">{{ form.Tamaño.label }}</label>
+                    {{ form.Tamaño }}
+                    {% if form.Tamaño.errors %}
+                    <div class="error-message">{{ form.Tamaño.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.Peso.id_for_label }}" class="required-field">{{ form.Peso.label }}</label>
+                    {{ form.Peso }}
+                    {% if form.Peso.errors %}
+                    <div class="error-message">{{ form.Peso.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.Color.id_for_label }}">{{ form.Color.label }}</label>
+                    {{ form.Color }}
+                    {% if form.Color.errors %}
+                    <div class="error-message">{{ form.Color.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- DESCRIPCIÓN FÍSICA -->
+            <h2 class="section-title">🎨 Descripción Física</h2>
+
+            <div class="form-group">
+                <label for="{{ form.Descripción_Física.id_for_label }}">{{ form.Descripción_Física.label }}</label>
+                {{ form.Descripción_Física }}
+                {% if form.Descripción_Física.errors %}
+                <div class="error-message">{{ form.Descripción_Física.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- FOTO -->
+            <div class="form-group">
+                <label for="{{ form.foto_mascota.id_for_label }}">{{ form.foto_mascota.label }}</label>
+
+                <!-- Mostrar foto actual si existe -->
+                {% if mascota.foto_mascota %}
+                <div class="foto-actual">
+                    <div>📸 Foto actual:</div>
+                    <img src="{{ mascota.foto_mascota.url }}" alt="Foto de {{ mascota.Nombre_Mascota }}"
+                        class="foto-actual-img">
+                    <small style="color: #999;">Sube una nueva foto para cambiarla</small>
+                </div>
+                {% endif %}
+
+                {{ form.foto_mascota }}
+                {% if form.foto_mascota.errors %}
+                <div class="error-message">{{ form.foto_mascota.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- INFORMACIÓN DE SALUD -->
+            <h2 class="section-title">💊 Información de Salud</h2>
+
+            <div class="form-group">
+                <label for="{{ form.Tipo_Alimentación.id_for_label }}">{{ form.Tipo_Alimentación.label }}</label>
+                {{ form.Tipo_Alimentación }}
+                {% if form.Tipo_Alimentación.errors %}
+                <div class="error-message">{{ form.Tipo_Alimentación.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.Enfermedades.id_for_label }}">{{ form.Enfermedades.label }}</label>
+                {{ form.Enfermedades }}
+                {% if form.Enfermedades.errors %}
+                <div class="error-message">{{ form.Enfermedades.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.Vacunas.id_for_label }}">{{ form.Vacunas.label }}</label>
+                {{ form.Vacunas }}
+                {% if form.Vacunas.errors %}
+                <div class="error-message">{{ form.Vacunas.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.Estado_Salud.id_for_label }}">{{ form.Estado_Salud.label }}</label>
+                    {{ form.Estado_Salud }}
+                    {% if form.Estado_Salud.errors %}
+                    <div class="error-message">{{ form.Estado_Salud.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.Vivienda.id_for_label }}">{{ form.Vivienda.label }}</label>
+                    {{ form.Vivienda }}
+                    {% if form.Vivienda.errors %}
+                    <div class="error-message">{{ form.Vivienda.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- COMPORTAMIENTO -->
+            <h2 class="section-title">🤝 Comportamiento y Compatibilidad</h2>
+
+            <div class="form-group">
+                <label for="{{ form.Compatibilidad_Mascota.id_for_label }}">{{ form.Compatibilidad_Mascota.label
+                    }}</label>
+                {{ form.Compatibilidad_Mascota }}
+                {% if form.Compatibilidad_Mascota.errors %}
+                <div class="error-message">{{ form.Compatibilidad_Mascota.errors }}</div>
+                {% endif %}
+            </div>
+
+            <!-- HISTORIAL -->
+            <h2 class="section-title">📖 Historial</h2>
+
+            <div class="form-group">
+                <label for="{{ form.Historial_Mascota.id_for_label }}">{{ form.Historial_Mascota.label }}</label>
+                {{ form.Historial_Mascota }}
+                {% if form.Historial_Mascota.errors %}
+                <div class="error-message">{{ form.Historial_Mascota.errors }}</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.Origen.id_for_label }}" class="required-field">
+                    {{ form.Origen.label }}
+                </label>
+                {{ form.Origen }}
+            </div>
+
+            <!-- OTROS DATOS -->
+            <h2 class="section-title">ℹ️ Información Adicional</h2>
+
+            <div class="form-row">
+                <div class="form-check">
+                    <label for="{{ form.Esterilizado.id_for_label }}">
+                        {{ form.Esterilizado }}
+                        {{ form.Esterilizado.label }}
+                    </label>
+                    {% if form.Esterilizado.errors %}
+                    <div class="error-message">{{ form.Esterilizado.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-check">
+                    <label for="{{ form.Socializado.id_for_label }}">
+                        {{ form.Socializado }}
+                        {{ form.Socializado.label }}
+                    </label>
+                    {% if form.Socializado.errors %}
+                    <div class="error-message">{{ form.Socializado.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- BOTONES -->
+            <div class="botones-edicion">
+                <button type="submit" class="btn-guardar">
+                    ✅ Guardar Cambios
+                </button>
+                <a href="{% url 'detalles_mascota' mascota.idMascota %}" class="btn-cancelar"
+                    style="text-decoration: none; text-align: center; display: flex; align-items: center; justify-content: center;">
+                    ← Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Script para formulario dinámico -->
+<script src="{% static 'js/formulario_mascota.js' %}"></script>
+
+{% endblock %}

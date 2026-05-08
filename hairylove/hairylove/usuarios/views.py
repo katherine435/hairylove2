@@ -17,8 +17,8 @@ from datetime import datetime
 from rest_framework.response import Response
 from adopcion.models import Mascota, Adopcion, Calificacion
 from servicios.models import Servicio, SolicitudServicio
-from .models import Usuario, Propietario, Criador, Administrador, PasswordResetToken
-from .serializers import UsuarioSerializer, PropietarioSerializer, CriadorSerializer, AdministradorSerializer
+from .models import Usuario, Propietario, Criador, PasswordResetToken
+from .serializers import UsuarioSerializer, PropietarioSerializer, CriadorSerializer
 from datetime import date
 from django.core.mail import send_mail
 from django.conf import settings
@@ -56,9 +56,7 @@ def inicio_sesion(request):
                 if usuario.tipo == 'Propietario':
                     return redirect('propietario') 
                 elif usuario.tipo == 'Criador':
-                    return redirect('criador')     
-                elif usuario.tipo == 'Administrador':
-                    return redirect('administrador') 
+                    return redirect('criador')
                 else:
                     return redirect('index')    
             else:
@@ -341,8 +339,42 @@ def registro(request):
         correo = request.POST.get('correo')
         password = request.POST.get('password')
         tipo = request.POST.get('tipo')
-        telefono = request.POST.get('telefono', '')
+        tipo_documento = request.POST.get('tipo_documento', '')
+        numero_documento = request.POST.get('numero_documento', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
         direccion = request.POST.get('direccion', '')
+
+        if len(nombre.strip()) < 3:
+            messages.error(request, "Por favor ingresa datos válidos")
+            return render(request, 'usuarios/registro.html')
+
+        if any(char.isdigit() for char in nombre):
+            messages.error(request, "El nombre no puede contener números")
+            return render(request, 'usuarios/registro.html')
+
+        if len(apellido.strip()) < 3:
+            messages.error(request, "Por favor ingresa datos válidos")
+            return render(request, 'usuarios/registro.html')
+
+        if any(char.isdigit() for char in apellido):
+            messages.error(request, "El apellido no puede contener números")
+            return render(request, 'usuarios/registro.html')
+
+        if not numero_documento.isdigit():
+            messages.error(request, "El número de documento debe contener solo dígitos")
+            return render(request, 'usuarios/registro.html')
+
+        if len(numero_documento) != 12:
+            messages.error(request, "El número de documento debe tener exactamente 12 dígitos")
+            return render(request, 'usuarios/registro.html')
+
+        if not telefono.isdigit():
+            messages.error(request, "El teléfono debe contener solo dígitos")
+            return render(request, 'usuarios/registro.html')
+
+        if len(telefono) != 10:
+            messages.error(request, "El teléfono debe tener exactamente 10 dígitos")
+            return render(request, 'usuarios/registro.html')
 
         try:
             usuario = Usuario.objects.create_user(
@@ -430,47 +462,6 @@ def perfil_criador(request):
     return render(request, 'usuarios/perfilCriador.html', context)
 
 
-@login_required
-def perfil_administrador(request):
-    """Dashboard administrativo con vista de base de datos completa"""
-    try:
-        administrador = Administrador.objects.get(user=request.user)
-    except Administrador.DoesNotExist:
-        administrador = None
-    
-    # Obtener datos para el dashboard
-    from adopcion.models import Mascota, Adopcion
-    total_usuarios = Usuario.objects.count()
-    total_propietarios = Usuario.objects.filter(tipo='Propietario').count()
-    total_criadores = Usuario.objects.filter(tipo='Criador').count()
-    total_mascotas = Mascota.objects.count()
-    mascotas_disponibles = Mascota.objects.filter(disponible=True).count()
-    total_adopciones = Adopcion.objects.count()
-    adopciones_pendientes = Adopcion.objects.filter(Estado='Pendiente').count()
-    adopciones_aprobadas = Adopcion.objects.filter(Estado='Aprobada').count()
-    
-    # Datos recientes
-    usuarios_recientes = Usuario.objects.all().order_by('-date_joined')[:10]
-    mascotas_recientes = Mascota.objects.all().order_by('-Fecha_Creacion')[:10]
-    adopciones_recientes = Adopcion.objects.all().order_by('-Fecha_Solicitud')[:10]
-    
-    context = {
-        'administrador': administrador,
-        'total_usuarios': total_usuarios,
-        'total_propietarios': total_propietarios,
-        'total_criadores': total_criadores,
-        'total_mascotas': total_mascotas,
-        'mascotas_disponibles': mascotas_disponibles,
-        'total_adopciones': total_adopciones,
-        'adopciones_pendientes': adopciones_pendientes,
-        'adopciones_aprobadas': adopciones_aprobadas,
-        'usuarios_recientes': usuarios_recientes,
-        'mascotas_recientes': mascotas_recientes,
-        'adopciones_recientes': adopciones_recientes,
-    }
-    return render(request, 'usuarios/perfilAdministrador.html', context)
-
-
 def handler_404(request, exception):
     return render(request, '404.html', status=404)
 
@@ -479,218 +470,6 @@ def handler_500(request):
     return render(request, '500.html', status=500)
 
 
-@login_required
-def descargar_reporte_excel(request):
-    """Generar y descargar reporte en Excel con toda la información actualizada"""
-    # Verificar que sea administrador
-    try:
-        administrador = Administrador.objects.get(user=request.user)
-    except Administrador.DoesNotExist:
-        messages.error(request, "No tienes permiso para esta acción")
-        return redirect('administrador')
-    
-    from adopcion.models import Mascota, Adopcion
-    
-    # Crear workbook
-    wb = Workbook()
-    wb.remove(wb.active)  # Remover la hoja predeterminada
-    
-    # Estilos
-    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
-    header_font = Font(bold=True, color="FFFFFF", size=12)
-    title_fill = PatternFill(start_color="70AD47", end_color="70AD47", fill_type="solid")
-    title_font = Font(bold=True, color="FFFFFF", size=14)
-    border_style = Border(
-        left=Side(style='thin'),
-        right=Side(style='thin'),
-        top=Side(style='thin'),
-        bottom=Side(style='thin')
-    )
-    
-    # ==================== HOJA 1: USUARIOS ====================
-    ws_usuarios = wb.create_sheet("Usuarios")
-    ws_usuarios['A1'] = "REPORTE DE USUARIOS"
-    ws_usuarios.merge_cells('A1:H1')
-    ws_usuarios['A1'].fill = title_fill
-    ws_usuarios['A1'].font = title_font
-    ws_usuarios['A1'].alignment = Alignment(horizontal='center', vertical='center')
-    
-    headers = ['ID', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Tipo', 'Puntuación Promedio', 'Fecha Creación']
-    for col, header in enumerate(headers, 1):
-        cell = ws_usuarios.cell(row=3, column=col)
-        cell.value = header
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = border_style
-    
-    usuarios = Usuario.objects.all()
-    for row, usuario in enumerate(usuarios, 4):
-        ws_usuarios.cell(row=row, column=1).value = usuario.idUsuario
-        ws_usuarios.cell(row=row, column=2).value = usuario.nombre
-        ws_usuarios.cell(row=row, column=3).value = usuario.apellido
-        ws_usuarios.cell(row=row, column=4).value = usuario.correo
-        ws_usuarios.cell(row=row, column=5).value = usuario.telefono
-        ws_usuarios.cell(row=row, column=6).value = usuario.tipo
-        ws_usuarios.cell(row=row, column=7).value = float(usuario.puntuacion_promedio) if usuario.puntuacion_promedio else 0
-        ws_usuarios.cell(row=row, column=8).value = usuario.date_joined.strftime("%d/%m/%Y")
-        for col in range(1, 9):
-            ws_usuarios.cell(row=row, column=col).border = border_style
-    
-    # Ajustar ancho de columnas
-    ws_usuarios.column_dimensions['A'].width = 10
-    ws_usuarios.column_dimensions['B'].width = 15
-    ws_usuarios.column_dimensions['C'].width = 15
-    ws_usuarios.column_dimensions['D'].width = 25
-    ws_usuarios.column_dimensions['E'].width = 15
-    ws_usuarios.column_dimensions['F'].width = 15
-    ws_usuarios.column_dimensions['G'].width = 18
-    ws_usuarios.column_dimensions['H'].width = 15
-    
-    # ==================== HOJA 2: MASCOTAS ====================
-    ws_mascotas = wb.create_sheet("Mascotas en Adopción")
-    ws_mascotas['A1'] = "REPORTE DE MASCOTAS EN ADOPCIÓN"
-    ws_mascotas.merge_cells('A1:I1')
-    ws_mascotas['A1'].fill = title_fill
-    ws_mascotas['A1'].font = title_font
-    ws_mascotas['A1'].alignment = Alignment(horizontal='center', vertical='center')
-    
-    headers = ['ID', 'Nombre', 'Especie', 'Raza', 'Edad', 'Género', 'Disponible', 'Criador', 'Fecha Creación']
-    for col, header in enumerate(headers, 1):
-        cell = ws_mascotas.cell(row=3, column=col)
-        cell.value = header
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = border_style
-    
-    mascotas = Mascota.objects.select_related('idCriador').all()
-    for row, mascota in enumerate(mascotas, 4):
-        ws_mascotas.cell(row=row, column=1).value = mascota.idMascota
-        ws_mascotas.cell(row=row, column=2).value = mascota.Nombre_Mascota
-        ws_mascotas.cell(row=row, column=3).value = mascota.Especie
-        ws_mascotas.cell(row=row, column=4).value = mascota.Raza
-        ws_mascotas.cell(row=row, column=5).value = mascota.Edad
-        ws_mascotas.cell(row=row, column=6).value = mascota.Genero
-        ws_mascotas.cell(row=row, column=7).value = "Sí" if mascota.disponible else "No"
-        criador_nombre = f"{mascota.idCriador.user.nombre} {mascota.idCriador.user.apellido}" if mascota.idCriador else "N/A"
-        ws_mascotas.cell(row=row, column=8).value = criador_nombre
-        ws_mascotas.cell(row=row, column=9).value = mascota.Fecha_Creacion.strftime("%d/%m/%Y") if mascota.Fecha_Creacion else ""
-        for col in range(1, 10):
-            ws_mascotas.cell(row=row, column=col).border = border_style
-    
-    # Ajustar ancho
-    ws_mascotas.column_dimensions['A'].width = 10
-    ws_mascotas.column_dimensions['B'].width = 15
-    ws_mascotas.column_dimensions['C'].width = 12
-    ws_mascotas.column_dimensions['D'].width = 15
-    ws_mascotas.column_dimensions['E'].width = 10
-    ws_mascotas.column_dimensions['F'].width = 12
-    ws_mascotas.column_dimensions['G'].width = 12
-    ws_mascotas.column_dimensions['H'].width = 20
-    ws_mascotas.column_dimensions['I'].width = 15
-    
-    # ==================== HOJA 3: ADOPCIONES ====================
-    ws_adopciones = wb.create_sheet("Adopciones")
-    ws_adopciones['A1'] = "REPORTE DE ADOPCIONES"
-    ws_adopciones.merge_cells('A1:J1')
-    ws_adopciones['A1'].fill = title_fill
-    ws_adopciones['A1'].font = title_font
-    ws_adopciones['A1'].alignment = Alignment(horizontal='center', vertical='center')
-    
-    headers = ['ID', 'Mascota', 'Propietario', 'Criador', 'Estado', 'Fecha Solicitud', 'Fecha Aprobación', 'Razón Adopción', 'Experiencia', 'Otros']
-    for col, header in enumerate(headers, 1):
-        cell = ws_adopciones.cell(row=3, column=col)
-        cell.value = header
-        cell.fill = header_fill
-        cell.font = header_font
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = border_style
-    
-    adopciones = Adopcion.objects.select_related('idMascota', 'idPropietario', 'idCriador').all()
-    for row, adopcion in enumerate(adopciones, 4):
-        ws_adopciones.cell(row=row, column=1).value = adopcion.idAdopcion
-        ws_adopciones.cell(row=row, column=2).value = adopcion.idMascota.Nombre_Mascota if adopcion.idMascota else ""
-        ws_adopciones.cell(row=row, column=3).value = f"{adopcion.idPropietario.nombre} {adopcion.idPropietario.apellido}" if adopcion.idPropietario else ""
-        criador_nombre = f"{adopcion.idCriador.user.nombre} {adopcion.idCriador.user.apellido}" if adopcion.idCriador else ""
-        ws_adopciones.cell(row=row, column=4).value = criador_nombre
-        ws_adopciones.cell(row=row, column=5).value = adopcion.Estado
-        ws_adopciones.cell(row=row, column=6).value = adopcion.Fecha_Solicitud.strftime("%d/%m/%Y") if adopcion.Fecha_Solicitud else ""
-        ws_adopciones.cell(row=row, column=7).value = adopcion.Fecha_Aprobacion.strftime("%d/%m/%Y") if adopcion.Fecha_Aprobacion else ""
-        ws_adopciones.cell(row=row, column=8).value = adopcion.Razon_Adopcion or ""
-        ws_adopciones.cell(row=row, column=9).value = adopcion.Experiencia_Mascotas or ""
-        ws_adopciones.cell(row=row, column=10).value = adopcion.Otros or ""
-        for col in range(1, 11):
-            ws_adopciones.cell(row=row, column=col).border = border_style
-    
-    # Ajustar ancho
-    ws_adopciones.column_dimensions['A'].width = 10
-    ws_adopciones.column_dimensions['B'].width = 15
-    ws_adopciones.column_dimensions['C'].width = 20
-    ws_adopciones.column_dimensions['D'].width = 20
-    ws_adopciones.column_dimensions['E'].width = 12
-    ws_adopciones.column_dimensions['F'].width = 15
-    ws_adopciones.column_dimensions['G'].width = 15
-    ws_adopciones.column_dimensions['H'].width = 20
-    ws_adopciones.column_dimensions['I'].width = 18
-    ws_adopciones.column_dimensions['J'].width = 20
-    
-    # ==================== HOJA 4: RESUMEN ====================
-    ws_resumen = wb.create_sheet("Resumen", 0)
-    ws_resumen['A1'] = "RESUMEN ADMINISTRATIVO - HAIRYLOVE"
-    ws_resumen.merge_cells('A1:D1')
-    ws_resumen['A1'].fill = title_fill
-    ws_resumen['A1'].font = title_font
-    ws_resumen['A1'].alignment = Alignment(horizontal='center', vertical='center')
-    ws_resumen['A1'].font = Font(bold=True, color="FFFFFF", size=16)
-    
-    # Estadísticas generales
-    ws_resumen['A3'] = "ESTADÍSTICAS GENERALES"
-    ws_resumen['A3'].fill = header_fill
-    ws_resumen['A3'].font = header_font
-    ws_resumen.merge_cells('A3:B3')
-    
-    total_usuarios_count = Usuario.objects.count()
-    total_propietarios_count = Usuario.objects.filter(tipo='Propietario').count()
-    total_criadores_count = Usuario.objects.filter(tipo='Criador').count()
-    total_mascotas_count = Mascota.objects.count()
-    mascotas_disponibles_count = Mascota.objects.filter(disponible=True).count()
-    total_adopciones_count = Adopcion.objects.count()
-    adopciones_pendientes_count = Adopcion.objects.filter(Estado='Pendiente').count()
-    adopciones_aprobadas_count = Adopcion.objects.filter(Estado='Aprobada').count()
-    
-    stats_data = [
-        ('Total Usuarios', total_usuarios_count),
-        ('Propietarios', total_propietarios_count),
-        ('Criadores', total_criadores_count),
-        ('Total Mascotas', total_mascotas_count),
-        ('Mascotas Disponibles', mascotas_disponibles_count),
-        ('Total Adopciones', total_adopciones_count),
-        ('Adopciones Pendientes', adopciones_pendientes_count),
-        ('Adopciones Aprobadas', adopciones_aprobadas_count),
-    ]
-    
-    for idx, (label, value) in enumerate(stats_data, 4):
-        ws_resumen[f'A{idx}'] = label
-        ws_resumen[f'B{idx}'] = value
-        ws_resumen[f'A{idx}'].border = border_style
-        ws_resumen[f'B{idx}'].border = border_style
-        ws_resumen[f'B{idx}'].alignment = Alignment(horizontal='center')
-        ws_resumen[f'B{idx}'].font = Font(bold=True, size=12)
-    
-    ws_resumen['A14'] = f"Fecha del Reporte: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}"
-    ws_resumen['A14'].font = Font(italic=True, size=10)
-    
-    ws_resumen.column_dimensions['A'].width = 25
-    ws_resumen.column_dimensions['B'].width = 15
-    
-    # Generar respuesta HTTP
-    response = HttpResponse(
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = f'attachment; filename="Reporte_Hairylove_{datetime.now().strftime("%d_%m_%Y_%H%M%S")}.xlsx"'
-    wb.save(response)
-    return response
 
 
 @login_required
@@ -1062,14 +841,5 @@ class CriadorViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     permission_classes = [permissions.IsAuthenticated]
     filter_fields = ['Estado_Verificacion', 'Tipo_Criador']
-
-
-class AdministradorViewSet(viewsets.ModelViewSet):
-    queryset = Administrador.objects.all()
-    serializer_class = AdministradorSerializer
-    pagination_class = StandardResultsSetPagination
-    permission_classes = [permissions.IsAuthenticated]
-    filter_fields = ['es_superadmin']
-    search_fields = ['user__nombre', 'user__correo']
 
 

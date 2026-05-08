@@ -11,7 +11,6 @@ urlpatterns = [
     # Rutas de perfil (CORRECTAS)
     path('perfil-propietario/', views.perfil_propietario, name='propietario'),
     path('perfil-criador/', views.perfil_criador, name='criador'),
-    path('perfil-administrador/', views.perfil_administrador, name='administrador'),
     path('editar-perfil/', views.editar_perfil, name='editar_perfil'),
     
     # Otras rutas
@@ -34,7 +33,4 @@ urlpatterns = [
     # Rutas para notificaciones
     path('notificaciones/', views.notificaciones, name='notificaciones'),
     path('notificaciones/marcar-todas/', views.marcar_todas_notificaciones, name='marcar_todas_notificaciones'),
-
-    # Rutas para administración
-    path('descargar-reporte-excel/', views.descargar_reporte_excel, name='descargar_reporte_excel'),
 ]

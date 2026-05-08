@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from usuarios.views import UsuarioViewSet, PropietarioViewSet, CriadorViewSet, AdministradorViewSet
+from usuarios.views import UsuarioViewSet, PropietarioViewSet, CriadorViewSet
 from servicios.views import ServicioViewSet, SolicitudServicioViewSet
 from adopcion.views import MascotaViewSet, AdopcionViewSet
 from adopcion.viewsets import CalificacionViewSet, NotificacionViewSet, ChatMessageViewSet
@@ -11,7 +11,6 @@ router = DefaultRouter()
 router.register(r'usuarios', UsuarioViewSet, basename='usuario')
 router.register(r'propietarios', PropietarioViewSet, basename='propietario')
 router.register(r'criadores', CriadorViewSet, basename='criador')
-router.register(r'administradores', AdministradorViewSet, basename='administrador')
 
 # Registrar viewsets de servicios
 router.register(r'servicios', ServicioViewSet, basename='servicio')

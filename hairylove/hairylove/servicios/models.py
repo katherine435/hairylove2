@@ -1,5 +1,5 @@
 from django.db import models
-from usuarios.models import Usuario, Administrador
+from usuarios.models import Usuario
 from adopcion.models import Mascota
 from datetime import datetime, timedelta
 
@@ -101,11 +101,11 @@ class SolicitudServicio(models.Model):
 
 
 class RespuestaDiagnostico(models.Model):
-    """Modelo para almacenar diagnósticos y respuestas del administrador"""
+    """Modelo para almacenar diagnósticos y respuestas del especialista"""
     
     idRespuesta = models.AutoField(primary_key=True)
     solicitud = models.OneToOneField(SolicitudServicio, on_delete=models.CASCADE, related_name='diagnostico')
-    administrador = models.ForeignKey(Administrador, on_delete=models.SET_NULL, null=True, related_name='diagnosticos')
+    especialista = models.ForeignKey(Usuario, on_delete=models.SET_NULL, null=True, related_name='diagnosticos')
     
     diagnóstico = models.TextField()
     tratamiento_recomendado = models.TextField()

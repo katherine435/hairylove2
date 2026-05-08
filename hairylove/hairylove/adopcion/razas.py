@@ -26,7 +26,6 @@ RAZAS_POR_ESPECIE = {
         'Husky Siberiano',
         'Sabueso',
         'Setter Irlandés',
-        'Bretón',
         'Weimaraner',
         'Vizsla',
         'Pointer Inglés',

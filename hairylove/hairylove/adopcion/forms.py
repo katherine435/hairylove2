@@ -1,16 +1,44 @@
 from django import forms
 from .models import Mascota, Adopcion
 from django.utils import timezone
+from .razas import RAZAS_POR_ESPECIE, ESPECIES
 
 
 class MascotaAdopcionForm(forms.ModelForm):
     """Formulario para registrar una mascota en adopción"""
     
+    # Definir choices para Especie
+    ESPECIE_CHOICES = [(especie, especie) for especie in ESPECIES]
+    ESPECIE_CHOICES.insert(0, ('', '---------'))
+    
+    # Generar todas las razas disponibles
+    TODAS_LAS_RAZAS = set()
+    for razas in RAZAS_POR_ESPECIE.values():
+        TODAS_LAS_RAZAS.update(razas)
+    TODAS_LAS_RAZAS = sorted(list(TODAS_LAS_RAZAS))
+    RAZA_CHOICES = [(raza, raza) for raza in TODAS_LAS_RAZAS]
+    RAZA_CHOICES.insert(0, ('', '---------'))
+    
+    # Campos con Select en lugar de TextInput
+    Especie = forms.ChoiceField(
+        choices=ESPECIE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=True,
+        label='Especie'
+    )
+    
+    # Raza como TextInput para permitir razas personalizadas
+    Raza = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=True,
+        label='Raza'
+    )
+    
     class Meta:
         model = Mascota
         fields = [
-            'Nombre_Mascota', 'Fecha_Nacimiento', 'Raza', 'Genero', 'Peso',
-            'Especie', 'Color', 'Tamaño', 'Historial_Mascota', 'Tipo_Alimentación',
+            'Nombre_Mascota', 'Fecha_Nacimiento', 'Especie', 'Raza', 'Genero', 
+            'Peso', 'Color', 'Tamaño', 'Historial_Mascota', 'Tipo_Alimentación',
             'Enfermedades', 'Vivienda', 'Vacunas', 'Compatibilidad_Mascota',
             'Descripción_Física', 'Estado_Salud', 'Esterilizado', 'Socializado',
             'foto_mascota', 'Origen'
@@ -24,27 +52,17 @@ class MascotaAdopcionForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date'
             }),
-            'Raza': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ej: Labrador, Persa, etc.'
-            }),
-            'Genero': forms.Select(attrs={'class': 'form-control'}),
             'Peso': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Peso en kg',
                 'step': '0.1'
             }),
-            'Especie': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ej: Perro, Gato, etc.'
-            }),
             'Color': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Color o patrón de pelaje'
             }),
-            'Tamaño': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Pequeño, Mediano, Grande, Muy Grande'
+            'Tamaño': forms.Select(attrs={
+                'class': 'form-control'
             }),
             'Historial_Mascota': forms.Textarea(attrs={
                 'class': 'form-control',

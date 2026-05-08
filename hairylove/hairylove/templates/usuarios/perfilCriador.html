@@ -274,7 +274,6 @@
         <div class="criador-contenido">
             <!-- INFORMACIÓN DEL CRIADOR -->
             <div class="seccion-titulo">📋 Información del Criador</div>
-            
             <div class="info-grid">
                 <div class="info-card">
                     <div class="info-label">Nombre Completo</div>
@@ -328,7 +327,23 @@
                     <p style="color: #666; line-height: 1.8;">{{ criador.Razon_Dar_Adopcion }}</p>
                 </div>
             {% endif %}
-            
+              <!-- BOTONES DE ACCIONES RÁPIDAS (solo si es el usuario logueado) -->
+            {% if user.is_authenticated and user == criador.user %}
+                <div style="text-align: center; margin: 20px 0 30px 0;">
+                    <a href="{% url 'editar_perfil' %}" class="btn-registrar-mascota" style="background: linear-gradient(135deg, #a8419f, #8B3A7D);">
+                        ✏️ Editar Perfil
+                    </a>
+                    <a href="{% url 'registrar_mascota_adopcion' %}" class="btn-registrar-mascota">
+                        + Registrar Nueva Mascota
+                    </a>
+                    <a href="{% url 'solicitudes_adopcion_criador' %}" class="btn-registrar-mascota" style="margin-left: 15px; background: linear-gradient(135deg, #28a745, #20c997);">
+                        📋 Ver Solicitudes de Adopción
+                    </a>
+                    <a href="{% url 'carga_masiva_mascotas' %}" class="btn-registrar-mascota" style="margin-left: 15px; background: linear-gradient(135deg, #007bff, #0056b3);">
+                        📊 Carga Masiva de Mascotas
+                    </a>
+                </div>
+            {% endif %}
             <!-- ESTADÍSTICAS -->
             <div class="estadisticas">
                 <h3 style="color: #FF6B9D; margin-top: 0;">📊 Estadísticas</h3>
@@ -392,24 +407,6 @@
                 <div class="sin-mascotas">
                     <h3>😿 No hay mascotas registradas aún</h3>
                     <p>Este criador aún no ha registrado mascotas en el sistema.</p>
-                </div>
-            {% endif %}
-            
-            <!-- BOTÓN PARA REGISTRAR MASCOTA (solo si es el usuario logueado) -->
-            {% if user.is_authenticated and user == criador.user %}
-                <div style="text-align: center; margin: 40px 0;">
-                    <a href="{% url 'editar_perfil' %}" class="btn-registrar-mascota" style="background: linear-gradient(135deg, #a8419f, #8B3A7D);">
-                        ✏️ Editar Perfil
-                    </a>
-                    <a href="{% url 'registrar_mascota_adopcion' %}" class="btn-registrar-mascota">
-                        + Registrar Nueva Mascota
-                    </a>
-                    <a href="{% url 'solicitudes_adopcion_criador' %}" class="btn-registrar-mascota" style="margin-left: 15px; background: linear-gradient(135deg, #28a745, #20c997);">
-                        📋 Ver Solicitudes de Adopción
-                    </a>
-                    <a href="{% url 'carga_masiva_mascotas' %}" class="btn-registrar-mascota" style="margin-left: 15px; background: linear-gradient(135deg, #007bff, #0056b3);">
-                        📊 Carga Masiva de Mascotas
-                    </a>
                 </div>
             {% endif %}
             

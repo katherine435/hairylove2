@@ -189,40 +189,37 @@
             </div>
            
 
-            <!-- SELECCIONAR TIPO DE USUARIO -->
-            <div class="tipo-usuarios" id="tipo-usuarios">
-                <button type="button" class="tipo-btn active" data-tipo="propietario"  onclick="event.preventDefault(); seleccionarTipo('Propietario')">
-                    <i class="fas fa-home"></i>
-                    Propietario
-                </button>
-                <button type="button" class="tipo-btn" data-tipo="criador" onclick="event.preventDefault(); seleccionarTipo('Criador')">
-                    <i class="fas fa-heart"></i>
-                    Criador
-                </button>
-            </div>
-
-            <!-- Tipo de documento -->
-           <div class="form-input-group">
-           <label>Tipo de documento</label>
-           <select name="tipo_documento" required>
-           <option value="">Selecciona</option>
-           <option value="cc">Cédula de Ciudadanía</option>
-           <option value="ce">Cédula de Extranjería</option>
-            <option value="pasaporte">Pasaporte</option>
-            </select>
-            </div>
-
-            <!-- Número de documento -->
-            <div class="form-input-group">
-    <i class="fas fa-id-card"></i>
-    <input type="text" name="numero_documento" placeholder="Número de documento" required>
-</div>
-           
-
-
-            <!-- FORMULARIO UNIVERSAL -->
-            <form method="POST" id="registro-form">
+<form method="POST" id="registro-form">
                 {% csrf_token %}
+
+                <!-- SELECCIONAR TIPO DE USUARIO -->
+                <div class="tipo-usuarios" id="tipo-usuarios">
+                    <button type="button" class="tipo-btn active" data-tipo="propietario"  onclick="event.preventDefault(); seleccionarTipo('Propietario')">
+                        <i class="fas fa-home"></i>
+                        Propietario
+                    </button>
+                    <button type="button" class="tipo-btn" data-tipo="criador" onclick="event.preventDefault(); seleccionarTipo('Criador')">
+                        <i class="fas fa-heart"></i>
+                        Criador
+                    </button>
+                </div>
+
+                <!-- Tipo de documento -->
+                <div class="form-input-group">
+                    <label>Tipo de documento</label>
+                    <select name="tipo_documento" required>
+                        <option value="">Selecciona</option>
+                        <option value="cc">Cédula de Ciudadanía</option>
+                        <option value="ce">Cédula de Extranjería</option>
+                        <option value="pasaporte">Pasaporte</option>
+                    </select>
+                </div>
+
+                <!-- Número de documento -->
+                <div class="form-input-group">
+                    <i class="fas fa-id-card"></i>
+                    <input type="text" name="numero_documento" id="numero_documento" placeholder="Número de documento" required inputmode="numeric" pattern="\d{12}" maxlength="12" minlength="12" oninput="this.value = this.value.replace(/\D/g, '');">
+                </div>
 
                 <input type="hidden" name="tipo" id="tipo-input" value="Propietario">
 
@@ -230,14 +227,14 @@
                 <div class="form-row full">
                     <div class="form-input-group">
                         <label for="nombre"><i class="fas fa-user"></i> Nombre</label>
-                        <input type="text" name="nombre" id="nombre" placeholder="Tu nombre" required>
+                        <input type="text" name="nombre" id="nombre" placeholder="Tu nombre" required pattern="[A-Za-zÀ-ÿ ]+" maxlength="50" minlength="3" oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ ]/g, '');" oninvalid="this.setCustomValidity('Por favor ingresa datos válidos')" oninput="this.setCustomValidity('')">
                     </div>
                 </div>
 
                 <div class="form-row full">
                     <div class="form-input-group">
                         <label for="apellido"><i class="fas fa-user"></i> Apellido</label>
-                        <input type="text" name="apellido" id="apellido" placeholder="Tu apellido" required>
+                        <input type="text" name="apellido" id="apellido" placeholder="Tu apellido" required pattern="[A-Za-zÀ-ÿ ]+" maxlength="50" minlength="3" oninput="this.value = this.value.replace(/[^A-Za-zÀ-ÿ ]/g, '');" oninvalid="this.setCustomValidity('Por favor ingresa datos válidos')" oninput="this.setCustomValidity('')">
                     </div>
                 </div>
 
@@ -248,7 +245,7 @@
                     </div>
                     <div class="form-input-group">
                         <label for="telefono"><i class="fas fa-phone"></i> Teléfono</label>
-                        <input type="tel" name="telefono" id="telefono" placeholder="+57 3001234567" required>
+                        <input type="tel" name="telefono" id="telefono" placeholder="3001234567" required inputmode="numeric" pattern="\d{10}" maxlength="10" minlength="10" oninput="this.value = this.value.replace(/\D/g, '');">
                     </div>
                 </div>
 
@@ -349,6 +346,20 @@
             } else {
                 grupo.style.display = 'none';
                 input.value = '';
+            }
+        }
+
+        function togglePassword(fieldId, icon) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
         }
     </script>

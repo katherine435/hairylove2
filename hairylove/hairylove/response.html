@@ -503,6 +503,234 @@
                 max-width: none;
             }
         }
+
+        /* ESTILOS DEL CARRUSEL DE MASCOTAS */
+        .hero-carousel-section {
+            background: linear-gradient(135deg, rgba(232, 62, 140, 0.1), rgba(168, 65, 159, 0.05)) !important;
+            border-radius: 20px;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            padding: 3rem;
+            position: relative;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-content h1 {
+            animation: slideInFromTop 0.8s ease;
+        }
+
+        .hero-content p {
+            animation: slideInFromTop 0.8s ease 0.2s both;
+        }
+
+        .hero-buttons {
+            animation: slideInFromTop 0.8s ease 0.4s both;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pets-carousel-container {
+            position: relative;
+            height: 400px;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border-radius: 15px;
+        }
+
+        .carousel {
+            display: flex;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+        }
+
+        .carousel-item {
+            min-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-pet-card {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffffff 0%, #fafbff 100%);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .pet-image-placeholder {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: bounce-soft 0.8s ease infinite;
+        }
+
+        .pet-image {
+            width: 100%;
+            height: 70%;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .carousel-pet-card h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .carousel-pet-card p {
+            color: #666;
+            text-align: center;
+        }
+
+        /* Controles del carrusel */
+        .carousel-control {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(232, 62, 140, 0.7);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-control:hover {
+            background: rgba(232, 62, 140, 1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .carousel-control.prev {
+            left: -25px;
+        }
+
+        .carousel-control.next {
+            right: -25px;
+        }
+
+        /* Indicadores */
+        .carousel-indicators {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .carousel-dot.active {
+            background: #e83e8c;
+            width: 30px;
+            border-radius: 6px;
+        }
+
+        .carousel-dot:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Animaciones */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce-soft {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-carousel-section {
+                grid-template-columns: 1fr;
+                padding: 2rem;
+            }
+
+            .pets-carousel-container {
+                height: 300px;
+            }
+
+            .carousel-control {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-carousel-section {
+                padding: 1.5rem;
+            }
+
+            .hero-content h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .pets-carousel-container {
+                height: 250px;
+                margin-top: 2rem;
+            }
+
+            .pet-image-placeholder {
+                font-size: 3rem;
+            }
+
+            .carousel-control {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -544,20 +772,48 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main style="padding: 2rem 0; min-height: calc(100vh - 300px);">
         
-    <!-- HERO SECTION CON ANIMACIÓN -->
-    <div class="hero">
-        <h1><i class="fas fa-star" style="color: #ffc107; margin-right: 0.5rem;"></i> Dale un hogar lleno de amor y alegría <i class="fas fa-star" style="color: #ffc107; margin-left: 0.5rem;"></i></h1>
-        <p>
-            💕 Conectamos mascotas con familias responsables. Encuentra a tu compañero perfecto y cambia dos vidas para siempre.
-        </p>
+    <!-- HERO SECTION CON CARRUSEL DE MASCOTAS -->
+    <div class="hero-carousel-section">
+        <div class="hero-content">
+            <h1><i class="fas fa-star" style="color: #ffc107; margin-right: 0.5rem;"></i> Dale un hogar lleno de amor y alegría <i class="fas fa-star" style="color: #ffc107; margin-left: 0.5rem;"></i></h1>
+            <p>
+                💕 Conectamos mascotas con familias responsables. Encuentra a tu compañero perfecto y cambia dos vidas para siempre.
+            </p>
 
-        <div class="hero-buttons">
-            <a href="/formulario-servicios/" class="btn-primary">
-                <i class="fas fa-heartbeat"></i> Quiero un servicio
-            </a>
-            <a href="/mascotas-adopcion/" class="btn-pink">
-                <i class="fas fa-paw"></i> Quiero adoptar
-            </a>
+            <div class="hero-buttons">
+                <a href="/formulario-servicios/" class="btn-primary">
+                    <i class="fas fa-heartbeat"></i> Quiero un servicio
+                </a>
+                <a href="/mascotas-adopcion/" class="btn-pink">
+                    <i class="fas fa-paw"></i> Quiero adoptar
+                </a>
+            </div>
+        </div>
+
+        <!-- CARRUSEL DE MASCOTAS -->
+        <div class="pets-carousel-container">
+            <div class="carousel-wrapper">
+                <div class="carousel" id="petsCarousel">
+                    <!-- Las imágenes se cargarán aquí vía JavaScript -->
+                    <div class="carousel-item active">
+                        <div class="carousel-pet-card">
+                            <div class="pet-image-placeholder">🐾</div>
+                            <h3>Mascotas Disponibles</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles del carrusel -->
+                <button class="carousel-control prev" id="carouselPrev" aria-label="Anterior">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="carousel-control next" id="carouselNext" aria-label="Siguiente">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <!-- Indicadores de puntos -->
+                <div class="carousel-indicators" id="carouselIndicators"></div>
+            </div>
         </div>
     </div>
 

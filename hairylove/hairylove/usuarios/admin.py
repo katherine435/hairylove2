@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Usuario, Propietario, Criador, Administrador, PasswordResetToken
+from .models import Usuario, Propietario, Criador, PasswordResetToken
 
 @admin.register(Usuario)
 class UsuarioAdmin(admin.ModelAdmin):
@@ -17,13 +17,6 @@ class PropietarioAdmin(admin.ModelAdmin):
 class CriadorAdmin(admin.ModelAdmin):
     list_display = ('idCriador', 'user', 'Tipo_Criador')
     search_fields = ('user__correo',)
-
-@admin.register(Administrador)
-class AdministradorAdmin(admin.ModelAdmin):
-    list_display = ('idAdministrador', 'user', 'es_superadmin', 'fecha_creacion')
-    list_filter = ('es_superadmin',)
-    search_fields = ('user__correo',)
-    readonly_fields = ('idAdministrador', 'fecha_creacion')
 
 @admin.register(PasswordResetToken)
 class PasswordResetTokenAdmin(admin.ModelAdmin):

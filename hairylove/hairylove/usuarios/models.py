@@ -6,7 +6,6 @@ from datetime import date
 class Usuario(AbstractUser):
 
     TIPOS_USUARIO = [
-        ('Administrador', 'Administrador'),
         ('Propietario', 'Propietario'),
         ('Criador', 'Criador'),
     ]
@@ -56,17 +55,6 @@ class Criador(models.Model):
 
     def __str__(self):
         return f"Criador {self.idCriador} - {self.Tipo_Criador}"
-
-
-class Administrador(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    idAdministrador = models.AutoField(primary_key=True)
-    es_superadmin = models.BooleanField(default=False)  # True si es el dueño principal del sitio
-    fecha_creacion = models.DateField(default=date.today)
-    fecha_ultimo_acceso = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return f"Administrador - {self.user.nombre} {self.user.apellido}"
 
 
 class Propietario(models.Model):

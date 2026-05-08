@@ -269,7 +269,21 @@
                 </div>
             </div>
             
-            {% if user.is_authenticated and not solicitud_existente %}
+            {% if user.is_authenticated and es_criador_propietario %}
+                <!-- Botones para el criador propietario -->
+                <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
+                    <a href="{% url 'editar_mascota' mascota.idMascota %}" class="btn-adoptar" style="text-decoration: none; text-align: center; padding: 15px 40px; display: inline-block; background: #4CAF50;">
+                        ✏️ Editar Mascota
+                    </a>
+                    <a href="{% url 'ver_solicitudes_mascota' mascota.idMascota %}" class="btn-adoptar" style="text-decoration: none; text-align: center; padding: 15px 40px; display: inline-block; background: #2196F3;">
+                        📋 Ver Solicitudes
+                    </a>
+                    <a href="{% url 'eliminar_mascota' mascota.idMascota %}" class="btn-adoptar" style="text-decoration: none; text-align: center; padding: 15px 40px; display: inline-block; background: #f44336;">
+                        🗑️ Eliminar Mascota
+                    </a>
+                </div>
+            {% elif user.is_authenticated and not solicitud_existente %}
+                <!-- Botones para propietarios interesados en adoptar -->
                 <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
                     <a href="{% url 'solicitar_adopcion' mascota.idMascota %}" class="btn-adoptar" style="text-decoration: none; text-align: center; padding: 15px 40px; display: inline-block;">
                         ❤️ Solicitar Adopción

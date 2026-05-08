@@ -19,6 +19,9 @@ urlpatterns = [
     path('mis-mascotas/', views.mis_mascotas_adopcion, name='mis_mascotas_adopcion'),
     path('disponibles/', views.mascotas_adopcion_disponibles, name='mascotas_adopcion_disponibles'),
     path('mascota/<int:mascota_id>/', views.detalles_mascota, name='detalles_mascota'),
+    path('mascota/<int:mascota_id>/editar/', views.editar_mascota, name='editar_mascota'),
+    path('mascota/<int:mascota_id>/eliminar/', views.eliminar_mascota, name='eliminar_mascota'),
+    path('mascota/<int:mascota_id>/solicitudes/', views.ver_solicitudes_mascota, name='ver_solicitudes_mascota'),
     path('solicitar/<int:mascota_id>/', views.solicitar_adopcion, name='solicitar_adopcion'),
     path('mis-adopciones/', views.mis_adopciones, name='mis_adopciones'),
     
@@ -46,6 +49,12 @@ urlpatterns = [
 
     # Carga masiva de mascotas
     path('carga-masiva/', views.carga_masiva_mascotas, name='carga_masiva_mascotas'),
+
+    # APIs para registro dinámico de mascotas
+    path('api/especies/', views.api_especies, name='api_especies'),
+    path('api/razas-por-especie/', views.api_razas_por_especie, name='api_razas_por_especie'),
+    path('api/generos/', views.api_generos, name='api_generos'),
+    path('api/tamanos/', views.api_tamanos, name='api_tamanos'),
 
     # APIs RESTful
     path('api/', include(router.urls)),
